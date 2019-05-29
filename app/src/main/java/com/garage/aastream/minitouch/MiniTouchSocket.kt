@@ -57,7 +57,7 @@ class MiniTouchSocket {
         disconnectLocal()
         val socket = LocalSocket()
         try {
-            socket.connect(LocalSocketAddress(Companion.DEFAULT_SOCKET_NAME))
+            socket.connect(LocalSocketAddress(DEFAULT_SOCKET_NAME))
             if (inputReadParams(socket.inputStream)) {
                 outputStream = socket.outputStream
                 socketLocal = socket
@@ -238,12 +238,8 @@ class MiniTouchSocket {
         return ok
     }
 
-    internal fun touchCommit(): Boolean {
-        return writeOutput("c\n")
-    }
-
-    fun touchReset(): Boolean {
-        return writeOutput("r\n")
+    internal fun touchCommit() {
+        writeOutput("c\n")
     }
 
     companion object {

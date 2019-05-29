@@ -2,7 +2,6 @@
 <androidx.constraintlayout.widget.ConstraintLayout
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -22,21 +21,18 @@
         <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/txt_enable_developer_mode_title"
+                android:text="@string/txt_disable_developer_mode_title"
                 style="@style/TitleTextStyle"/>
 
         <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/txt_enable_developer_mode_subtitle"
+                android:text="@string/txt_disable_developer_mode_subtitle"
                 style="@style/SubtitleTextStyle"/>
     </LinearLayout>
 
     <androidx.appcompat.widget.SwitchCompat
             android:id="@+id/settings_debug_switch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
             android:layout_marginEnd="16dp"
             style="@style/SwitchStyle"
             app:layout_constraintEnd_toEndOf="parent"

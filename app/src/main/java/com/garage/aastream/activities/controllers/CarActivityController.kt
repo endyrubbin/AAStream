@@ -19,10 +19,6 @@ import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
-import com.google.android.apps.auto.sdk.CarUiController
-import com.google.android.apps.auto.sdk.DayNightStyle
-import kotlinx.android.synthetic.main.activity_car.view.*
-import kotlinx.android.synthetic.main.view_car_terminal.view.*
 import com.garage.aastream.App
 import com.garage.aastream.BuildConfig
 import com.garage.aastream.R
@@ -39,6 +35,10 @@ import com.garage.aastream.receivers.ScreenLockReceiver
 import com.garage.aastream.utils.Const
 import com.garage.aastream.utils.DevLog
 import com.garage.aastream.views.MarginDecoration
+import com.google.android.apps.auto.sdk.CarUiController
+import com.google.android.apps.auto.sdk.DayNightStyle
+import kotlinx.android.synthetic.main.activity_car.view.*
+import kotlinx.android.synthetic.main.view_car_terminal.view.*
 import javax.inject.Inject
 
 /**
@@ -270,16 +270,18 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      * Show selected screen
      */
     private fun showScreen(index: Int) {
-        DevLog.d("Showing screen: $index")
-        hideKeyboard()
-        when (index) {
-            ViewType.VIEW_NONE.value -> {
-                rootView.car_app_grid.visibility = View.GONE
-                rootView.view_car_terminal.visibility = View.GONE
+        DevLog.d("Showing screen if: $index != ${currentView.value}")
+        if (index != currentView.value) {
+            hideKeyboard()
+            when (index) {
+                ViewType.VIEW_NONE.value -> {
+                    rootView.car_app_grid.visibility = View.GONE
+                    rootView.view_car_terminal.visibility = View.GONE
+                }
+                ViewType.VIEW_APP_LIST.value -> showAllApps()
+                ViewType.VIEW_FAVORITES.value -> showFavorites()
+                ViewType.VIEW_TERMINAL.value -> showTerminal()
             }
-            ViewType.VIEW_APP_LIST.value -> showAllApps()
-            ViewType.VIEW_FAVORITES.value -> showFavorites()
-            ViewType.VIEW_TERMINAL.value -> showTerminal()
         }
     }
 
@@ -301,13 +303,14 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     private fun showAllApps() {
         DevLog.d("Showing all apps")
         currentView = ViewType.VIEW_APP_LIST
-        rootView.car_app_grid.visibility = View.VISIBLE
+        rootView.car_app_grid.visibility = View.GONE
         rootView.car_app_favorite_empty.visibility = View.GONE
         rootView.view_car_terminal.visibility = View.GONE
         if (apps.isEmpty()) {
             rootView.car_app_grid_loader.visibility = View.VISIBLE
         } else {
             rootView.car_app_grid_loader.visibility = View.GONE
+            rootView.car_app_grid.visibility = View.VISIBLE
             adapter.addAll(apps)
         }
     }

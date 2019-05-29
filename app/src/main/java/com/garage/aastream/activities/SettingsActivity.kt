@@ -2,32 +2,34 @@ package com.garage.aastream.activities
 
 import android.annotation.TargetApi
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import com.garage.aastream.R
 import android.os.Build
+import android.os.Bundle
 import android.provider.Settings
+import android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS
 import android.view.View
-import android.widget.*
-import kotlinx.android.synthetic.main.activity_settings.*
-import kotlinx.android.synthetic.main.view_settings_brightness.*
-import kotlinx.android.synthetic.main.view_settings_brightness.settings_brightness_switch
-import kotlinx.android.synthetic.main.view_settings_rotation.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.SeekBar
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import com.garage.aastream.App
+import com.garage.aastream.BuildConfig
+import com.garage.aastream.R
 import com.garage.aastream.handlers.BrightnessHandler
 import com.garage.aastream.handlers.PreferenceHandler
 import com.garage.aastream.handlers.RotationHandler
-import com.garage.aastream.utils.DevLog
-import javax.inject.Inject
-import android.provider.Settings.ACTION_MANAGE_WRITE_SETTINGS
-import kotlinx.android.synthetic.main.view_settings_debug.*
-import kotlinx.android.synthetic.main.view_settings_sidebar.*
-import kotlinx.android.synthetic.main.view_settings_unlock.*
-import com.garage.aastream.BuildConfig
 import com.garage.aastream.interfaces.OnPatchStatusCallback
 import com.garage.aastream.utils.Const
+import com.garage.aastream.utils.DevLog
 import com.garage.aastream.utils.PhenotypePatcher
+import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.view_settings_about.*
+import kotlinx.android.synthetic.main.view_settings_brightness.*
+import kotlinx.android.synthetic.main.view_settings_debug.*
+import kotlinx.android.synthetic.main.view_settings_rotation.*
+import kotlinx.android.synthetic.main.view_settings_sidebar.*
+import kotlinx.android.synthetic.main.view_settings_unlock.*
+import javax.inject.Inject
 
 /**
  * Created by Endy Rubbin on 22.05.2019 10:44.
@@ -67,18 +69,17 @@ class SettingsActivity : AppCompatActivity() {
         settings_debug_activity_holder.setOnClickListener {
             startActivity(Intent(this, CarDebugActivity::class.java))
         }
+        settings_debug_switch.setOnCheckedChangeListener { _, isChecked ->
+            DevLog.d("Debug switch changed: $isChecked")
+            preferences.putBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, isChecked)
+            view_settings_debug.visibility = if (isChecked) View.VISIBLE else View.GONE
+        }
+        settings_debug_switch.isChecked = preferences.getBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, BuildConfig.DEBUG)
         view_settings_debug.visibility = if (preferences.getBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, BuildConfig.DEBUG)) {
             View.VISIBLE
         } else {
             View.GONE
         }
-        settings_debug_switch.setOnCheckedChangeListener { _, isChecked ->
-            DevLog.d("Debug switch changed: $isChecked")
-            if (BuildConfig.DEBUG) {
-                preferences.putBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, isChecked)
-            }
-        }
-        settings_debug_switch.isChecked = preferences.getBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, false)
 
         // Unlock controller
         view_settings_unlock.setOnClickListener { unlock() }
@@ -135,7 +136,8 @@ class SettingsActivity : AppCompatActivity() {
             android.R.layout.simple_spinner_item)
         sidebarAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         settings_sidebar_dropdown.adapter = sidebarAdapter
-        settings_sidebar_dropdown.setSelection(preferences.getInt(PreferenceHandler.KEY_STARTUP_VALUE, Const.DEFAULT_SCREEN))
+        settings_sidebar_dropdown.setSelection(preferences.getInt(PreferenceHandler.KEY_STARTUP_VALUE,
+            Const.DEFAULT_SCREEN))
         settings_sidebar_dropdown.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
             override fun onNothingSelected(parent: AdapterView<*>?) {}
             override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
@@ -143,14 +145,16 @@ class SettingsActivity : AppCompatActivity() {
                 preferences.putInt(PreferenceHandler.KEY_STARTUP_VALUE, position)
             }
         }
-        settings_sidebar_switch.isChecked = preferences.getBoolean(PreferenceHandler.KEY_SIDEBAR_SWITCH, Const.DEFAULT_SHOW_SIDEBAR)
+        settings_sidebar_switch.isChecked = preferences.getBoolean(PreferenceHandler.KEY_SIDEBAR_SWITCH,
+            Const.DEFAULT_SHOW_SIDEBAR)
         settings_sidebar_switch.setOnCheckedChangeListener { _, isChecked ->
             DevLog.d("Sidebar switch changed: $isChecked")
             preferences.putBoolean(PreferenceHandler.KEY_SIDEBAR_SWITCH, isChecked)
         }
 
         // About controller
-        settings_about_version.text = getString(R.string.txt_version, BuildConfig.VERSION_NAME + BuildConfig.VERSION_CODE)
+        settings_about_version.text = getString(R.string.txt_version,
+            "${BuildConfig.VERSION_NAME}.${BuildConfig.VERSION_CODE}")
         settings_about.setOnClickListener {
             val currentTime = System.currentTimeMillis()
             if (currentTime - time <= Const.CLICK_INTERVAL) {
@@ -161,9 +165,15 @@ class SettingsActivity : AppCompatActivity() {
 
             time = currentTime
             if (count == Const.DEBUG_CLICK_COUNT) {
-                DevLog.d("Enabling debug mode")
+                DevLog.d("Debug mode enabled")
+                Toast.makeText(this@SettingsActivity, getString(R.string.toast_developer_mode_enabled),
+                    Toast.LENGTH_LONG).show()
                 preferences.putBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, true)
                 view_settings_debug.visibility = View.VISIBLE
+                settings_debug_switch.isChecked = true
+            } else if (count >= Const.DEBUG_CLICK_COUNT - 3 && count < Const.DEBUG_CLICK_COUNT) {
+                Toast.makeText(this@SettingsActivity, getString(R.string.toast_developer_mode_click,
+                    (Const.DEBUG_CLICK_COUNT - count)), Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -179,7 +189,7 @@ class SettingsActivity : AppCompatActivity() {
             override fun onPatchSuccessful() {
                 runOnUiThread {
                     Toast.makeText(this@SettingsActivity,
-                        "Successfully unlocked. Reboot phone and connect to Android Auto", Toast.LENGTH_LONG).show()
+                        getString(R.string.toast_app_whitelisted), Toast.LENGTH_LONG).show()
                     settings_unlock_state_icon.visibility = View.VISIBLE
                     settings_unlock_state_spinner.visibility = View.GONE
                 }
@@ -188,7 +198,7 @@ class SettingsActivity : AppCompatActivity() {
             override fun onPatchFailed() {
                 runOnUiThread {
                     Toast.makeText(this@SettingsActivity,
-                        "Root not available, install SuperSU and perform root first.", Toast.LENGTH_LONG).show()
+                        getString(R.string.toast_root_not_available), Toast.LENGTH_LONG).show()
                     settings_unlock_state_icon.visibility = View.GONE
                     settings_unlock_state_spinner.visibility = View.GONE
                 }

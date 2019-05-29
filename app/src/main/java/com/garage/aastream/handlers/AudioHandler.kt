@@ -13,7 +13,7 @@ import com.garage.aastream.utils.DevLog
  * For project: AAStream
  */
 class AudioHandler(
-    private val context: Context,
+    context: Context,
     private val preferences: PreferenceHandler
 ) {
 

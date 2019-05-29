@@ -2,12 +2,11 @@ package com.garage.aastream.handlers
 
 import android.app.Application
 import android.content.Context
-import com.google.gson.Gson
 import com.garage.aastream.models.AppItem
 import com.garage.aastream.models.AppItemWrapper
 import com.garage.aastream.utils.Const
-
-import java.util.ArrayList
+import com.google.gson.Gson
+import java.util.*
 
 /**
  * Created by Endy Rubbin on 22.05.2019 14:31.
@@ -73,6 +72,5 @@ class PreferenceHandler(context: Application) {
         const val KEY_SIDEBAR_SWITCH = "sidebar_switch"
         const val KEY_STARTUP_VALUE = "sidebar_value"
         const val KEY_DEBUG_ENABLED = "debug_enabled"
-        const val KEY_DEBUG_SWITCH = "debug_switch"
     }
 }

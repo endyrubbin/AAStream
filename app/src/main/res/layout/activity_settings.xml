@@ -3,9 +3,9 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         xmlns:tools="http://schemas.android.com/tools"
         android:id="@+id/settings_root"
+        android:background="@drawable/bg"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/bg"
         tools:context=".activities.SettingsActivity">
 
     <LinearLayout
@@ -13,12 +13,6 @@
             android:paddingBottom="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-
-        <!-- Debug car app control -->
-        <include layout="@layout/view_settings_debug"
-                 android:visibility="gone"
-                 android:id="@+id/view_settings_debug"
-                 tools:visibility="visible"/>
 
         <!-- Unlock app control -->
         <include layout="@layout/view_settings_unlock"
@@ -43,6 +37,12 @@
                  android:id="@+id/view_settings_sidebar" />
 
         <View style="@style/DividerStyle"/>
+
+        <!-- Debug car app control -->
+        <include layout="@layout/view_settings_debug"
+                 android:visibility="gone"
+                 android:id="@+id/view_settings_debug"
+                 tools:visibility="visible"/>
 
         <!-- About -->
         <include layout="@layout/view_settings_about"
