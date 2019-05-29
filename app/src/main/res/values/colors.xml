@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#607D8B</color>
+    <color name="colorPrimaryDark">#455A64</color>
+    <color name="colorAccent">#795548</color>
+
+    <color name="color_title">#333</color>
+    <color name="color_subtitle">#aaa</color>
+    <color name="color_terminal">#fff</color>
+    <color name="color_terminal_icon">#dbdbdb</color>
+    <color name="color_terminal_text">#333</color>
+    <color name="color_terminal_hint">#aaa</color>
+    <color name="color_favorite">#fff</color>
+    <color name="color_divider">#333</color>
+    <color name="color_input_border">#aaa</color>
+    <color name="color_input_background">#fff</color>
+    <color name="color_app_title">#fff</color>
+    <color name="color_overlay_background">#BE333333</color>
+    <color name="color_menu_background">#ED333333</color>
+    <color name="color_unlocked">#8BC34A</color>
+
+</resources>

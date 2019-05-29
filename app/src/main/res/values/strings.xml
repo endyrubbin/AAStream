@@ -1,0 +1,52 @@
+<resources>
+    <string name="app_name">AA Stream</string>
+
+    <string-array name="rotation_values">
+        <item>0</item>
+        <item>90</item>
+        <item>180</item>
+        <item>270</item>
+    </string-array>
+
+    <string-array name="screen_values">
+        <item>None</item>
+        <item>App list</item>
+        <item>Favorites</item>
+    </string-array>
+
+    <string name="err_app_launch_failed">Couldn\'t launch application</string>
+    <string name="err_app_list_load_failed">Failed to load application list</string>
+
+    <string name="txt_overwrite_screen_brightness_title">Overwrite screen brightness</string>
+    <string name="txt_overwrite_screen_brightness_subtitle">Enable this setting to override device screen brightness to
+        save device battery
+    </string>
+    <string name="txt_debug_car_activity_title">Debug Car Activity</string>
+    <string name="txt_debug_car_activity_subtitle">Click here to debug Car Activity layout</string>
+    <string name="txt_force_screen_rotation_title">Force screen rotation</string>
+    <string name="txt_force_screen_rotation_subtitle">Enable this setting to force override screen rotation</string>
+    <string name="txt_unlock_for_android_auto_title">Unlock for Android Auto</string>
+    <string name="txt_unlock_for_android_auto_subtitle">Click here to whitelist AA Stream for Android Auto. Root
+        permission is required!
+    </string>
+    <string name="txt_added_to_favorites">App added to Favorites</string>
+    <string name="txt_removed_from_favorites">App removed from Favorites</string>
+    <string name="txt_favorite_list_empty">Favorite list is empty.\nPress and hold to mark an app as favorite.</string>
+    <string name="txt_enable_sidebar_title">Show sidebar on startup</string>
+    <string name="txt_enable_sidebar_subtitle">Enable this setting to show sidebar menu on application startup</string>
+    <string name="txt_choose_startup_screen">Choose startup screen</string>
+    <string name="txt_enter_a_command">Enter a command</string>
+    <string name="txt_enable_developer_mode_title">Enable developer mode</string>
+    <string name="txt_enable_developer_mode_subtitle">Enable this setting to use developer mode for debugging</string>
+    <string name="txt_about"><b>AA Stream</b> is an unofficial application used for Android Auto that mirrors your phone screen
+        onto the cars head unit.
+    </string>
+    <string name="txt_about_use">Your device has to bee rooted first to use this application. Use the unlock button to
+        whitelist <b>AA Stream</b> for Android Auto.\n\nReference and credits:
+        \n\t&#149; https://github.com/slashmax/AAMirror
+        \n\t&#149; https://github.com/Eselter/AA-Phenotype-Patcher
+        \n\t&#149; https://github.com/martoreto/aauto-sdk</string>
+    <string name="txt_about_title">About</string>
+    <string name="txt_endy_rubbin">© 2019 Endy Rubbin</string>
+    <string name="txt_version">Version: %1$s</string>
+</resources>

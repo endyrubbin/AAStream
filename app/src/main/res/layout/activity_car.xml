@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".activities.CarMainActivity">
+
+    <!-- Used for mirroring device screen -->
+    <SurfaceView
+            android:id="@+id/car_stream_view"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Menu holder -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+        <!-- App list -->
+        <com.garage.aastream.views.AutoFitRecyclerView
+                android:id="@+id/car_app_grid"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:columnWidth="@dimen/item_size"
+                android:paddingEnd="8dp"
+                android:paddingStart="0dp"
+                android:background="@color/color_overlay_background"
+                android:visibility="gone"
+                app:spanCount="1"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/car_menu_holder"
+                app:layout_constraintEnd_toEndOf="parent"
+                tools:visibility="visible"
+                tools:listitem="@layout/row_app_item">
+
+        </com.garage.aastream.views.AutoFitRecyclerView>
+
+        <ProgressBar
+                android:id="@+id/car_app_grid_loader"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/car_menu_holder"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+        <TextView
+                android:id="@+id/car_app_favorite_empty"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/txt_favorite_list_empty"
+                style="@style/FavoriteTextStyle"
+                android:visibility="gone"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/car_menu_holder"
+                app:layout_constraintEnd_toEndOf="parent"/>
+
+        <!-- Debug view -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone"
+                android:id="@+id/view_car_terminal"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/car_menu_holder"
+                app:layout_constraintEnd_toEndOf="parent">
+
+            <include layout="@layout/view_car_terminal"/>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <!-- Menu view -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/car_menu_holder"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:background="@color/color_menu_background"
+                android:padding="8dp"
+                android:alpha="0"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                tools:alpha="1">
+
+            <ImageView
+                    style="@style/IconStyle"
+                    android:id="@+id/car_menu_close"
+                    android:src="@drawable/ic_close"
+                    android:background="?android:attr/selectableItemBackground"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintBottom_toTopOf="@id/car_menu_app_list"
+                    tools:ignore="ContentDescription"/>
+
+            <ImageView
+                    style="@style/IconStyle"
+                    android:id="@+id/car_menu_app_list"
+                    android:src="@drawable/ic_apps"
+                    android:background="?android:attr/selectableItemBackground"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/car_menu_close"
+                    app:layout_constraintBottom_toTopOf="@id/car_menu_favorites"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:ignore="ContentDescription"/>
+
+            <ImageView
+                    style="@style/IconStyle"
+                    android:id="@+id/car_menu_favorites"
+                    android:src="@drawable/ic_bookmark_border"
+                    android:background="?android:attr/selectableItemBackground"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/car_menu_app_list"
+                    app:layout_constraintBottom_toTopOf="@id/car_menu_terminal"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:ignore="ContentDescription"/>
+
+            <ImageView
+                    style="@style/IconStyle"
+                    android:id="@+id/car_menu_terminal"
+                    android:src="@drawable/ic_terminal"
+                    android:background="?android:attr/selectableItemBackground"
+                    android:visibility="gone"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toBottomOf="@id/car_menu_favorites"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    tools:ignore="ContentDescription"
+                    tools:visibility="visible"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
