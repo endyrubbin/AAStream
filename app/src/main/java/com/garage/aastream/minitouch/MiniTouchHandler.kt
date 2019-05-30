@@ -9,10 +9,12 @@ import android.view.Surface.*
 import android.view.SurfaceView
 import android.view.View
 import android.view.WindowManager
-import eu.chainfire.libsuperuser.Shell
 import com.garage.aastream.interfaces.OnTwoFingerTapCallback
 import com.garage.aastream.utils.DevLog
 import com.garage.aastream.views.TwoFingerTapDetector
+import eu.chainfire.libsuperuser.Shell
+import java.io.FileOutputStream
+import java.io.InputStream
 
 /**
  * Created by Endy Rubbin on 22.05.2019 13:25.
@@ -34,6 +36,7 @@ class MiniTouchHandler(private val context: Context): View.OnTouchListener {
     private var projectionOffsetY = 0.0
     private var projectionWidth = 0.0
     private var projectionHeight = 0.0
+    private var isInstalled = false
 
     /**
      * Reads and updates current screen values
@@ -51,22 +54,26 @@ class MiniTouchHandler(private val context: Context): View.OnTouchListener {
         }
     }
 
+    @SuppressLint("ClickableViewAccessibility")
+    fun init(surfaceView: SurfaceView, callback: OnTwoFingerTapCallback) {
+        DevLog.d("Mini Touch initialized")
+        this.surfaceView = surfaceView
+        this.surfaceView?.setOnTouchListener(this)
+        twoFingerTapDetector = TwoFingerTapDetector(context, callback)
+    }
+
     /**
      * Start mini touch handler
      */
-    @SuppressLint("ClickableViewAccessibility")
-    fun start(surfaceView: SurfaceView, callback: OnTwoFingerTapCallback) {
-        Thread(Runnable {
-            DevLog.d("Mini Touch started")
-            this.surfaceView = surfaceView
-            this.surfaceView?.setOnTouchListener(this)
-            twoFingerTapDetector = TwoFingerTapDetector(context, callback)
-            val path = install()
-            if (path?.isNotEmpty() == true) {
-                Shell.Pool.SU.run("chmod 755 $path")
-                Shell.Pool.SU.run(path)
-            }
-        }).start()
+    fun start() {
+        val path = install()
+        DevLog.d("Mini Touch path: $path")
+        if (path?.isNotEmpty() == true) {
+            Shell.Pool.SU.run("chmod 755 $path")
+            Shell.Pool.SU.run(path)
+            isInstalled = true
+            DevLog.d("Mini Touch installed: $path")
+        }
     }
 
     /**
@@ -88,25 +95,28 @@ class MiniTouchHandler(private val context: Context): View.OnTouchListener {
      * Install minitouch library
      */
     private fun install(): String? {
-        DevLog.d("Mini Touch install")
+        var fileOutputStream: FileOutputStream? = null
+        var assetFile: InputStream? = null
         try {
-            val fileOutputStream = context.openFileOutput("minitouch", 0)
             val assetName = "libs/" + detectAbi() + "/minitouch"
-            val assetFile = context.assets.open(assetName)
-            val buffer = ByteArray(1024)
-            var read = 0
-            while (read != -1) {
-                read = assetFile.read(buffer)
-                fileOutputStream.write(buffer, 0, read)
+            fileOutputStream = context.openFileOutput("minitouch", 0)
+            assetFile = context.assets.open(assetName)
+            assetFile.use {
+                it.copyTo(fileOutputStream)
             }
-
-            assetFile.close()
-            fileOutputStream.close()
         } catch (e: Exception) {
             DevLog.d("Failed to install Mini Touch: $e")
             return null
+        } finally {
+            try {
+                assetFile?.close()
+                fileOutputStream?.close()
+            } catch (e: Exception) {
+                DevLog.d("Failed to close asset files")
+            }
         }
 
+        DevLog.d("Mini Touch installed")
         return context.getFileStreamPath("minitouch").absolutePath
     }
 
@@ -135,6 +145,10 @@ class MiniTouchHandler(private val context: Context): View.OnTouchListener {
     @SuppressLint("ClickableViewAccessibility")
     override fun onTouch(v: View?, event: MotionEvent): Boolean {
         if (!miniTouchSocket.isConnected()) {
+            if (!isInstalled) {
+                stop()
+                start()
+            }
             miniTouchSocket.connect(true)
             updateTouchTransformations(true)
         } else {

@@ -11,6 +11,7 @@ import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.os.AsyncTask
 import android.os.Handler
 import android.os.Looper
 import android.util.DisplayMetrics
@@ -37,6 +38,7 @@ import com.garage.aastream.utils.DevLog
 import com.garage.aastream.views.MarginDecoration
 import com.google.android.apps.auto.sdk.CarUiController
 import com.google.android.apps.auto.sdk.DayNightStyle
+import eu.chainfire.libsuperuser.Shell
 import kotlinx.android.synthetic.main.activity_car.view.*
 import kotlinx.android.synthetic.main.view_car_terminal.view.*
 import javax.inject.Inject
@@ -70,9 +72,12 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     private var mediaProjection: MediaProjection? = null
     private var projectionCode: Int = 0
     private var projectionIntent: Intent? = null
+    private var shell: Shell.Interactive? = null
 
     private val screenLockReceiver = ScreenLockReceiver(this)
     private val filter = IntentFilter()
+    private var minitouchDaemon: MinitouchDaemon? = null
+    private var shellTask: ShellAsyncTask? = null
 
     private val requestHandler = Handler(Handler.Callback { msg ->
         if (msg?.what == Const.REQUEST_MEDIA_PROJECTION_PERMISSION) {
@@ -83,6 +88,22 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         }
         false
     })
+
+    private class MinitouchDaemon(val miniTouchHandler: MiniTouchHandler) : AsyncTask<Void, Void, Void>() {
+        override fun doInBackground(vararg voids: Void): Void? {
+            DevLog.d("Minitouch daemon started")
+            miniTouchHandler.start()
+            return null
+        }
+    }
+
+    private class ShellAsyncTask(val shell: Shell.Interactive) : AsyncTask<String, Void, Void>() {
+        override fun doInBackground(vararg params: String): Void? {
+            DevLog.d("Executing shell command: $params")
+            shell.addCommand(params[0])
+            return null
+        }
+    }
 
     init {
         (context as App).component.inject(this)
@@ -101,6 +122,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         this.windowManager = windowManager
         this.carUiController = carUiController
         terminalController.init(rootView)
+        startMinitouch()
         initViews()
         initCarUiController()
         requestProjectionPermission()
@@ -123,7 +145,6 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         onScreenOn()
         audioHandler.start()
         orientationListener.enable()
-        miniTouchHandler.start(rootView.car_stream_view, this)
         brightnessHandler.setScreenBrightness()
         rotationHandler.setScreenRotation()
         context.registerReceiver(screenLockReceiver, filter)
@@ -137,7 +158,6 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         onScreenOff()
         audioHandler.stop()
         orientationListener.disable()
-        miniTouchHandler.stop()
         context.unregisterReceiver(screenLockReceiver)
     }
 
@@ -147,6 +167,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     fun onDestroy() {
         DevLog.d("Car activity destroyed $restarted")
         terminalController.stop()
+        stopMinitouch()
         if (!restarted) {
             brightnessHandler.restoreScreenBrightness()
             rotationHandler.restoreScreenRotation()
@@ -168,7 +189,29 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     }
 
     /**
-     * Sturt dummy activity to handle permission granted result
+     * Start mini touch daemon
+     */
+    private fun startMinitouch() {
+        minitouchDaemon = MinitouchDaemon(miniTouchHandler)
+        miniTouchHandler.init(rootView.car_stream_view, this)
+        if (Shell.SU.available()) {
+            minitouchDaemon?.execute()
+            shell = Shell.Builder().useSU().open()
+            shellTask = ShellAsyncTask(shell!!)
+        }
+    }
+
+    /**
+     * Stop mini touch daemon
+     */
+    private fun stopMinitouch() {
+        miniTouchHandler.stop()
+        minitouchDaemon?.cancel(true)
+        shell?.close()
+    }
+
+    /**
+     * Start dummy activity to handle permission granted result
      */
     private fun startActivityForResult(what: Int, intent: Intent) {
         ResultRequestActivity.startActivityForResult(context, requestHandler, what, intent, what)

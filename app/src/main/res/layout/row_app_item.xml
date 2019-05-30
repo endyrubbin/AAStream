@@ -12,7 +12,7 @@
     <ImageView
             android:id="@+id/item_app_icon"
             style="@style/AppIconStyle"
-            android:src="@mipmap/ic_launcher"
+            android:src="@android:drawable/sym_def_app_icon"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintBottom_toTopOf="@id/item_app_name"
@@ -22,8 +22,8 @@
     <RelativeLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:paddingTop="4dp"
-            android:paddingEnd="16dp"
+            android:paddingTop="2dp"
+            android:paddingEnd="8dp"
             android:paddingStart="16dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
