@@ -42,7 +42,7 @@
     <string name="txt_about"><b>AA Stream</b> is an unofficial application used for Android Auto that mirrors your phone
         screen onto the cars head unit.
     </string>
-    <string name="txt_about_use">Your device has to bee rooted first to use this application. Use the unlock button to
+    <string name="txt_about_use">Your device has to be rooted first to use this application. Use the unlock button to
         whitelist <b>AA Stream</b> for Android Auto.\n\nReference and credits:\n
         <li>https://github.com/endyrubbin/AA-Stream</li>\n
         <li>https://github.com/slashmax/AAMirror</li>\n

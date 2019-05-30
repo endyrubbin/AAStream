@@ -5,7 +5,7 @@
 
 **Use it with causion! I don't take any responsibility for the missuse of the application. You have been warned.**
 
-## Prerequisite and usage
+## Prerequisites and usage
 #### To use this application:
 - Your device has to be **rooted** (You have to figure out how to do it for yourself).
 - Android Auto must be installed, preferably an older version (~v3).
