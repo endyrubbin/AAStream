@@ -44,7 +44,7 @@
     </string>
     <string name="txt_about_use">Your device has to be rooted first to use this application. Use the unlock button to
         whitelist <b>AA Stream</b> for Android Auto.\n\nReference and credits:\n
-        <li>https://github.com/endyrubbin/AA-Stream</li>\n
+        <li>https://github.com/endyrubbin/AAStream</li>\n
         <li>https://github.com/slashmax/AAMirror</li>\n
         <li>https://github.com/Eselter/AA-Phenotype-Patcher</li>\n
         <li>https://github.com/martoreto/aauto-sdk</li></string>
