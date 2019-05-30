@@ -1,9 +1,9 @@
 package com.garage.aastream.views
 
 import android.content.Context
-import androidx.recyclerview.widget.RecyclerView
-import androidx.recyclerview.widget.GridLayoutManager
 import android.util.AttributeSet
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 /**
  * Created by Endy Rubbin on 23.05.2019 14:40.

@@ -1,9 +1,9 @@
 package com.garage.aastream.views
 
-import androidx.recyclerview.widget.RecyclerView
 import android.content.Context
 import android.graphics.Rect
 import android.view.View
+import androidx.recyclerview.widget.RecyclerView
 import com.garage.aastream.R
 
 /**
@@ -15,6 +15,6 @@ class MarginDecoration(context: Context) : RecyclerView.ItemDecoration() {
     private var margin = context.resources.getDimensionPixelSize(R.dimen.item_margin)
 
     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
-        outRect.set(margin, margin, margin, margin)
+        outRect.set(0, margin, margin, margin)
     }
 }

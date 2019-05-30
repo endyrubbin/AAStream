@@ -42,7 +42,7 @@ class SettingsActivity : AppCompatActivity() {
     @Inject lateinit var rotationHandler: RotationHandler
     @Inject lateinit var patcher: PhenotypePatcher
 
-    private var time: Long = 0
+    private var previousTime: Long = 0
     private var count = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,10 +71,10 @@ class SettingsActivity : AppCompatActivity() {
         }
         settings_debug_switch.setOnCheckedChangeListener { _, isChecked ->
             DevLog.d("Debug switch changed: $isChecked")
-            preferences.putBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, isChecked)
+            preferences.putBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, !isChecked)
             view_settings_debug.visibility = if (isChecked) View.VISIBLE else View.GONE
         }
-        settings_debug_switch.isChecked = preferences.getBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, BuildConfig.DEBUG)
+        settings_debug_switch.isChecked = !preferences.getBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, BuildConfig.DEBUG)
         view_settings_debug.visibility = if (preferences.getBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, BuildConfig.DEBUG)) {
             View.VISIBLE
         } else {
@@ -145,6 +145,19 @@ class SettingsActivity : AppCompatActivity() {
                 preferences.putInt(PreferenceHandler.KEY_STARTUP_VALUE, position)
             }
         }
+        val sidebarMenuAdapter = ArrayAdapter.createFromResource(this, R.array.tap_values,
+            android.R.layout.simple_spinner_item)
+        sidebarMenuAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        settings_sidebar_dropdown_menu.adapter = sidebarMenuAdapter
+        settings_sidebar_dropdown_menu.setSelection(preferences.getInt(PreferenceHandler.KEY_OPEN_MENU_METHOD,
+            Const.DEFAULT_TAP_METHOD))
+        settings_sidebar_dropdown_menu.onItemSelectedListener = object: AdapterView.OnItemSelectedListener {
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+            override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
+                DevLog.d("Sidebar open method selected $position")
+                preferences.putInt(PreferenceHandler.KEY_OPEN_MENU_METHOD, position)
+            }
+        }
         settings_sidebar_switch.isChecked = preferences.getBoolean(PreferenceHandler.KEY_SIDEBAR_SWITCH,
             Const.DEFAULT_SHOW_SIDEBAR)
         settings_sidebar_switch.setOnCheckedChangeListener { _, isChecked ->
@@ -157,13 +170,13 @@ class SettingsActivity : AppCompatActivity() {
             "${BuildConfig.VERSION_NAME}.${BuildConfig.VERSION_CODE}")
         settings_about.setOnClickListener {
             val currentTime = System.currentTimeMillis()
-            if (currentTime - time <= Const.CLICK_INTERVAL) {
+            if (currentTime - previousTime <= Const.CLICK_INTERVAL) {
                 count++
             } else {
                 count = 0
             }
 
-            time = currentTime
+            previousTime = currentTime
             if (count == Const.DEBUG_CLICK_COUNT) {
                 DevLog.d("Debug mode enabled")
                 Toast.makeText(this@SettingsActivity, getString(R.string.toast_developer_mode_enabled),

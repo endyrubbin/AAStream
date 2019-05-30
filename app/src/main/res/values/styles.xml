@@ -51,6 +51,8 @@
     <style name="SpinnerStyle" parent="Widget.AppCompat.Spinner">
         <item name="android:layout_marginTop">8dp</item>
         <item name="android:spinnerMode">dropdown</item>
+        <item name="android:layout_marginEnd">-16dp</item>
+        <item name="android:layout_marginStart">-8dp</item>
     </style>
 
     <style name="IconStyle" parent="AppTheme">
@@ -70,7 +72,7 @@
     <style name="BookmarkStyle" parent="AppIconStyle">
         <item name="android:layout_width">24dp</item>
         <item name="android:layout_height">24dp</item>
-        <item name="android:visibility">gone</item>
+        <item name="android:visibility">invisible</item>
     </style>
 
     <style name="AppTextStyle" parent="TextAppearance.AppCompat">

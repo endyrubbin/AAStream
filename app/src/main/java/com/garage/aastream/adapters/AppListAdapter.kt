@@ -1,7 +1,6 @@
 package com.garage.aastream.adapters
 
 import android.content.Context
-import android.content.res.Resources
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.view.LayoutInflater
@@ -13,12 +12,12 @@ import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.target.Target
-import kotlinx.android.synthetic.main.row_app_item.view.*
 import com.garage.aastream.R
 import com.garage.aastream.injection.GlideApp
 import com.garage.aastream.interfaces.OnAppClickedCallback
 import com.garage.aastream.models.AppItem
 import com.garage.aastream.utils.DevLog
+import kotlinx.android.synthetic.main.row_app_item.view.*
 import kotlin.random.Random
 
 /**
@@ -32,16 +31,13 @@ class AppListAdapter(
 
     private var currentPosition = DEFAULT_INDEX
     private val apps: ArrayList<AppItem> = ArrayList()
-    private val glide = GlideApp.with(context)
-
-    val Int.px: Int
-        get() = (this * Resources.getSystem().displayMetrics.density).toInt()
+    val glide = GlideApp.with(context)
 
     /**
      * Update the list adapter with new items
      */
     fun addAll(apps: ArrayList<AppItem>) {
-        DevLog.d("Notifying app list")
+        DevLog.d("Notifying app list ${apps.size} $apps")
         this.apps.clear()
         this.apps.addAll(apps)
         currentPosition = DEFAULT_INDEX
@@ -72,7 +68,7 @@ class AppListAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.row_app_item, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.row_app_item, parent, false)
         return ViewHolder(view)
     }
 
@@ -98,13 +94,11 @@ class AppListAdapter(
             if (app.drawable != null) {
                 glide.load(app.drawable)
                     .placeholder(android.R.drawable.sym_def_app_icon)
-                    .override(48.px, 48.px)
                     .into(itemView.item_app_icon)
             } else {
                 glide.load(if (app.icon != null) Uri.parse(app.icon) else android.R.drawable.sym_def_app_icon)
                     .placeholder(android.R.drawable.sym_def_app_icon)
-                    .override(48.px, 48.px)
-                    .listener(object: RequestListener<Drawable> {
+                    .listener(object : RequestListener<Drawable> {
                         override fun onLoadFailed(
                             e: GlideException?,
                             model: Any?,
@@ -129,7 +123,7 @@ class AppListAdapter(
             }
 
             itemView.item_app_name.text = app.label
-            itemView.item_app_favorite.visibility = if (app.favorite) View.VISIBLE else View.GONE
+            itemView.item_app_favorite.visibility = if (app.favorite) View.VISIBLE else View.INVISIBLE
             itemView.setOnClickListener { callback.onAppClicked(app) }
             itemView.setOnLongClickListener {
                 callback.onAppLongClicked(app)

@@ -12,6 +12,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/settings_sidebar_dropdown_title"
             app:layout_constraintEnd_toStartOf="@id/settings_sidebar_switch"
             app:layout_constraintStart_toStartOf="parent">
 
@@ -19,10 +20,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/txt_enable_sidebar_title"
-                style="@style/TitleTextStyle"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
+                style="@style/TitleTextStyle"/>
 
         <TextView
                 android:layout_width="match_parent"
@@ -42,12 +40,13 @@
 
     <TextView
             android:id="@+id/settings_sidebar_dropdown_title"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:text="@string/txt_choose_startup_screen"
             style="@style/TitleTextStyle"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/settings_sidebar_dropdown"
             app:layout_constraintTop_toBottomOf="@id/settings_sidebar_holder"/>
 
     <androidx.appcompat.widget.AppCompatSpinner
@@ -57,7 +56,29 @@
             style="@style/SpinnerStyle"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/settings_sidebar_dropdown_menu_title"
             app:layout_constraintTop_toBottomOf="@id/settings_sidebar_dropdown_title"/>
+
+    <TextView
+            android:id="@+id/settings_sidebar_dropdown_menu_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="@string/txt_choose_open_sidebar_method"
+            style="@style/TitleTextStyle"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/settings_sidebar_dropdown_menu"
+            app:layout_constraintTop_toBottomOf="@id/settings_sidebar_dropdown"/>
+
+    <androidx.appcompat.widget.AppCompatSpinner
+            android:id="@+id/settings_sidebar_dropdown_menu"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            style="@style/SpinnerStyle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/settings_sidebar_dropdown_menu_title"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

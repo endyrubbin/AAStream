@@ -1,13 +1,13 @@
 package com.garage.aastream.injection
 
 import android.app.Application
-import dagger.Module
-import dagger.Provides
 import com.garage.aastream.activities.controllers.CarActivityController
 import com.garage.aastream.activities.controllers.TerminalController
 import com.garage.aastream.handlers.*
 import com.garage.aastream.minitouch.MiniTouchHandler
 import com.garage.aastream.utils.PhenotypePatcher
+import dagger.Module
+import dagger.Provides
 import javax.inject.Singleton
 
 /**
@@ -25,8 +25,8 @@ class InjectionModule(private val context: Application) {
 
     @Singleton
     @Provides
-    fun provideMiniTouchHandler(): MiniTouchHandler {
-        return MiniTouchHandler(context)
+    fun provideMiniTouchHandler(preferences: PreferenceHandler): MiniTouchHandler {
+        return MiniTouchHandler(context, preferences)
     }
 
     @Singleton

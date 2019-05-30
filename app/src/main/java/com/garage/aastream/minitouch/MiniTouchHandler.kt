@@ -9,9 +9,10 @@ import android.view.Surface.*
 import android.view.SurfaceView
 import android.view.View
 import android.view.WindowManager
-import com.garage.aastream.interfaces.OnTwoFingerTapCallback
+import com.garage.aastream.handlers.PreferenceHandler
+import com.garage.aastream.interfaces.OnMenuTapCallback
 import com.garage.aastream.utils.DevLog
-import com.garage.aastream.views.TwoFingerTapDetector
+import com.garage.aastream.views.FingerTapDetector
 import eu.chainfire.libsuperuser.Shell
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -20,9 +21,12 @@ import java.io.InputStream
  * Created by Endy Rubbin on 22.05.2019 13:25.
  * For project: AAStream
  */
-class MiniTouchHandler(private val context: Context): View.OnTouchListener {
+class MiniTouchHandler(
+    private val context: Context,
+    private val preferenceHandler: PreferenceHandler
+): View.OnTouchListener {
 
-    private var twoFingerTapDetector: TwoFingerTapDetector? = null
+    private var fingerTapDetector: FingerTapDetector? = null
     private val miniTouchSocket: MiniTouchSocket = MiniTouchSocket()
     private var surfaceView: SurfaceView? = null
 
@@ -37,6 +41,10 @@ class MiniTouchHandler(private val context: Context): View.OnTouchListener {
     private var projectionWidth = 0.0
     private var projectionHeight = 0.0
     private var isInstalled = false
+
+    fun getDeviceDisplayWidth(): Int {
+        return deviceDisplaySize.x
+    }
 
     /**
      * Reads and updates current screen values
@@ -55,11 +63,20 @@ class MiniTouchHandler(private val context: Context): View.OnTouchListener {
     }
 
     @SuppressLint("ClickableViewAccessibility")
-    fun init(surfaceView: SurfaceView, callback: OnTwoFingerTapCallback) {
+    fun init(surfaceView: SurfaceView, callback: OnMenuTapCallback) {
         DevLog.d("Mini Touch initialized")
         this.surfaceView = surfaceView
         this.surfaceView?.setOnTouchListener(this)
-        twoFingerTapDetector = TwoFingerTapDetector(context, callback)
+        fingerTapDetector = FingerTapDetector(context, preferenceHandler, callback)
+    }
+
+    /**
+     * Clear views and callbacks
+     */
+    fun clear() {
+        surfaceView = null
+        fingerTapDetector?.removeCallback()
+        fingerTapDetector = null
     }
 
     /**
@@ -69,10 +86,14 @@ class MiniTouchHandler(private val context: Context): View.OnTouchListener {
         val path = install()
         DevLog.d("Mini Touch path: $path")
         if (path?.isNotEmpty() == true) {
-            Shell.Pool.SU.run("chmod 755 $path")
-            Shell.Pool.SU.run(path)
-            isInstalled = true
-            DevLog.d("Mini Touch installed: $path")
+            try {
+                Shell.Pool.SU.run("chmod 755 $path")
+                Shell.Pool.SU.run(path)
+                isInstalled = true
+                DevLog.d("Mini Touch installed: $path")
+            } catch (e: java.lang.Exception) {
+                DevLog.d("Failed to install minitouch")
+            }
         }
     }
 
@@ -83,9 +104,6 @@ class MiniTouchHandler(private val context: Context): View.OnTouchListener {
         val pid = miniTouchSocket.getPid()
         miniTouchSocket.disconnect()
         DevLog.d("Mini Touch stopped: $pid")
-        surfaceView = null
-        twoFingerTapDetector?.removeCallback()
-        twoFingerTapDetector = null
         if (pid != 0) {
             Shell.Pool.SU.run("kill $pid")
         }
@@ -197,10 +215,13 @@ class MiniTouchHandler(private val context: Context): View.OnTouchListener {
             miniTouchSocket.touchCommit()
         }
 
-        twoFingerTapDetector?.onTouchEvent(event)
+        fingerTapDetector?.onTouchEvent(event)
         return true
     }
 
+    /**
+     * Update touch coordinate transformations
+     */
     fun updateTouchTransformations(force: Boolean) {
         if (surfaceView == null ||
             deviceScreenRotation == screenRotation &&

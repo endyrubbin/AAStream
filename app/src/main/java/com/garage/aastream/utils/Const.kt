@@ -10,6 +10,7 @@ object Const {
     const val DEFAULT_ANIMATION_DELAY = 300L
     const val DEFAULT_ANIMATION_DURATION = 300L
     const val DEFAULT_SCREEN = 1
+    const val DEFAULT_TAP_METHOD = 0
     const val DEFAULT_SHOW_SIDEBAR = true
     const val REQUEST_MEDIA_PROJECTION_PERMISSION = 1337
     const val CLICK_INTERVAL = 300

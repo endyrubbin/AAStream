@@ -15,6 +15,7 @@ import android.os.AsyncTask
 import android.os.Handler
 import android.os.Looper
 import android.util.DisplayMetrics
+import android.view.KeyEvent
 import android.view.OrientationEventListener
 import android.view.View
 import android.view.WindowManager
@@ -28,8 +29,8 @@ import com.garage.aastream.adapters.AppListAdapter
 import com.garage.aastream.handlers.*
 import com.garage.aastream.interfaces.OnAppClickedCallback
 import com.garage.aastream.interfaces.OnAppListLoadedCallback
+import com.garage.aastream.interfaces.OnMenuTapCallback
 import com.garage.aastream.interfaces.OnScreenLockCallback
-import com.garage.aastream.interfaces.OnTwoFingerTapCallback
 import com.garage.aastream.minitouch.MiniTouchHandler
 import com.garage.aastream.models.AppItem
 import com.garage.aastream.receivers.ScreenLockReceiver
@@ -41,6 +42,7 @@ import com.google.android.apps.auto.sdk.DayNightStyle
 import eu.chainfire.libsuperuser.Shell
 import kotlinx.android.synthetic.main.activity_car.view.*
 import kotlinx.android.synthetic.main.view_car_terminal.view.*
+import java.util.concurrent.Executor
 import javax.inject.Inject
 
 /**
@@ -48,7 +50,7 @@ import javax.inject.Inject
  * For project: AAStream
  */
 class CarActivityController(val context: Application) : OnScreenLockCallback, OnAppClickedCallback,
-    OnAppListLoadedCallback, OnTwoFingerTapCallback {
+    OnAppListLoadedCallback, OnMenuTapCallback {
 
     @Inject lateinit var appHandler: AppHandler
     @Inject lateinit var preferences: PreferenceHandler
@@ -78,6 +80,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     private val filter = IntentFilter()
     private var minitouchDaemon: MinitouchDaemon? = null
     private var shellTask: ShellAsyncTask? = null
+    private val shellExecutor = ShellDirectExecutor()
 
     private val requestHandler = Handler(Handler.Callback { msg ->
         if (msg?.what == Const.REQUEST_MEDIA_PROJECTION_PERMISSION) {
@@ -102,6 +105,12 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
             DevLog.d("Executing shell command: $params")
             shell.addCommand(params[0])
             return null
+        }
+    }
+
+    private inner class ShellDirectExecutor : Executor {
+        override fun execute(r: Runnable) {
+            Thread(r).start()
         }
     }
 
@@ -167,6 +176,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     fun onDestroy() {
         DevLog.d("Car activity destroyed $restarted")
         terminalController.stop()
+        onScreenOff()
         stopMinitouch()
         if (!restarted) {
             brightnessHandler.restoreScreenBrightness()
@@ -185,6 +195,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      * Called when car activity focus has changed
      */
     fun onWindowFocusChanged() {
+        updateScreenSize()
         startScreenCapture()
     }
 
@@ -193,7 +204,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      */
     private fun startMinitouch() {
         minitouchDaemon = MinitouchDaemon(miniTouchHandler)
-        miniTouchHandler.init(rootView.car_stream_view, this)
+        miniTouchHandler.init(rootView.car_surface_view, this)
         if (Shell.SU.available()) {
             minitouchDaemon?.execute()
             shell = Shell.Builder().useSU().open()
@@ -205,6 +216,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      * Stop mini touch daemon
      */
     private fun stopMinitouch() {
+        miniTouchHandler.clear()
         miniTouchHandler.stop()
         minitouchDaemon?.cancel(true)
         shell?.close()
@@ -248,6 +260,12 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         rootView.car_menu_favorites.setOnClickListener { showScreen(ViewType.VIEW_FAVORITES.value) }
         rootView.car_menu_terminal.setOnClickListener { showScreen(ViewType.VIEW_TERMINAL.value) }
         rootView.car_menu_close.setOnClickListener { switchMenuVisibility(false) }
+        rootView.car_menu_back.setOnClickListener {
+            shell?.let {
+                showScreen(ViewType.VIEW_NONE.value)
+                ShellAsyncTask(it).executeOnExecutor(shellExecutor, "input keyevent ${KeyEvent.KEYCODE_BACK}")
+            }
+        }
         rootView.car_menu_holder.post {
             initialMenuX = rootView.car_menu_holder.width.toFloat()
             rootView.car_menu_holder.x = -initialMenuX
@@ -301,7 +319,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
                     .setListener(object : AnimatorListenerAdapter() {
                         override fun onAnimationEnd(animation: Animator?) {
                             super.onAnimationEnd(animation)
-                            showScreen(ViewType.VIEW_NONE.value)
+                            currentView = Companion.ViewType.VIEW_NONE
                         }
                     })
                     .start()
@@ -313,13 +331,14 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      * Show selected screen
      */
     private fun showScreen(index: Int) {
-        DevLog.d("Showing screen if: $index != ${currentView.value}")
         if (index != currentView.value) {
+            DevLog.d("Showing screen: $index")
             hideKeyboard()
             when (index) {
                 ViewType.VIEW_NONE.value -> {
                     rootView.car_app_grid.visibility = View.GONE
                     rootView.view_car_terminal.visibility = View.GONE
+                    rootView.car_app_favorite_empty.visibility = View.GONE
                 }
                 ViewType.VIEW_APP_LIST.value -> showAllApps()
                 ViewType.VIEW_FAVORITES.value -> showFavorites()
@@ -447,7 +466,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      */
     private fun startScreenCapture() {
         Handler(Looper.getMainLooper()).postDelayed({
-            rootView.car_stream_view.post {
+            rootView.car_surface_view.post {
                 DevLog.d("Will starting screen capture if ($projectionCode) != 0 && ($projectionIntent) != null")
                 if (projectionIntent != null || projectionCode != 0) {
                     stopScreenCapture()
@@ -463,8 +482,8 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
 
                     mediaProjection = mediaProjectionManager.getMediaProjection(projectionCode, projectionIntent!!)
                     mediaProjection?.let {
-                        val width = rootView.car_stream_view.width
-                        val height = rootView.car_stream_view.height
+                        val width = rootView.car_surface_view.width
+                        val height = rootView.car_surface_view.height
 
                         DevLog.d("Screen width: $width")
                         DevLog.d("Screen height: $height")
@@ -475,7 +494,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
                                 "ScreenCapture",
                                 width, height, screenDensity,
                                 DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                                rootView.car_stream_view.holder.surface, null, null
+                                rootView.car_surface_view.holder.surface, null, null
                             )
                         }
                     }
@@ -496,11 +515,41 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     }
 
     /**
+     * Update screen size on focus change
+     */
+    private fun updateScreenSize() {
+        val width = rootView.car_surface_view.width.toDouble()
+        val height = rootView.car_surface_view.height.toDouble()
+        if (width > 0 && height > 0) {
+            val ratio = width / height
+            val deviceWidth = miniTouchHandler.getDeviceDisplayWidth()
+            val deviceHeight = (deviceWidth * ratio).toInt()
+            if (deviceWidth > 0) {
+                shell?.let {
+                    DevLog.d("Setting screen size: $deviceWidth $deviceHeight")
+                    ShellAsyncTask(it).executeOnExecutor(shellExecutor, "wm size " + deviceWidth + "x" + deviceHeight)
+                }
+            }
+        }
+    }
+
+    /**
+     * Reset the screen size
+     */
+    private fun resetScreenSize() {
+        shell?.let {
+            DevLog.d("Resetting screen size")
+            ShellAsyncTask(it).executeOnExecutor(shellExecutor, "wm size reset")
+        }
+    }
+
+    /**
      * Called when device screen is unlocked
      */
     override fun onScreenUnlocked() {
         DevLog.d("Screen Unlocked")
-        rootView.car_stream_view.keepScreenOn = false
+        rootView.car_surface_view.keepScreenOn = false
+        updateScreenSize()
     }
 
     /**
@@ -508,7 +557,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      */
     override fun onScreenOn() {
         DevLog.d("Screen ON")
-        rootView.car_stream_view.keepScreenOn = true
+        rootView.car_surface_view.keepScreenOn = true
         startScreenCapture()
     }
 
@@ -517,14 +566,16 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      */
     override fun onScreenOff() {
         DevLog.d("Screen OFF")
-        rootView.car_stream_view.keepScreenOn = false
+        rootView.car_surface_view.keepScreenOn = false
+        resetScreenSize()
         stopScreenCapture()
     }
 
     /**
      * Called when screen is tapped with two fingers
      */
-    override fun onTwoFingerTapped() {
+    override fun onTapForMenu() {
+        DevLog.d("Show menu from tap")
         switchMenuVisibility(true)
     }
 
