@@ -5,6 +5,8 @@
 
 **Use it with caution! I don't take any responsibility for the misuse of the application. You have been warned.**
 
+Get the latest APK [here](https://github.com/endyrubbin/AAStream/tree/master/apk_releases)
+
 ## Prerequisites and usage
 #### To use this application:
 - Your device has to be **rooted** (You have to figure out how to do it for yourself).
