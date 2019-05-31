@@ -49,7 +49,7 @@
   - This adds a new option in car display to see the logs of the app.
   
 ## Car Activity guide
-<img align="right" src="img/android_auto.gif" alt="Car Activity" height="500">
+<img src="img/android_auto.gif" alt="Car Activity" height="500">
 <br/>
 <br/>
 
