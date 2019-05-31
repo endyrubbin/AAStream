@@ -22,7 +22,6 @@ import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import com.garage.aastream.App
-import com.garage.aastream.BuildConfig
 import com.garage.aastream.R
 import com.garage.aastream.activities.ResultRequestActivity
 import com.garage.aastream.adapters.AppListAdapter
@@ -182,6 +181,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
             brightnessHandler.restoreScreenBrightness()
             rotationHandler.restoreScreenRotation()
         }
+        restarted = false
     }
 
     /**
@@ -270,10 +270,10 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
             initialMenuX = rootView.car_menu_holder.width.toFloat()
             rootView.car_menu_holder.x = -initialMenuX
         }
-        rootView.car_menu_terminal.visibility = if (preferences.getBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, BuildConfig.DEBUG)) {
-            View.VISIBLE
-        } else {
+        rootView.car_menu_terminal.visibility = if (preferences.getBoolean(PreferenceHandler.KEY_DEBUG_DISABLED, true)) {
             View.GONE
+        } else {
+            View.VISIBLE
         }
         switchMenuVisibility(preferences.getBoolean(PreferenceHandler.KEY_SIDEBAR_SWITCH, Const.DEFAULT_SHOW_SIDEBAR))
     }

@@ -27,11 +27,6 @@
 - Restart device for the changes to take effect.
 - Connect the device to your car and select **AA Stream** from all apps menu (Last icon on the right in cars display), if **AA Stream** is not there, redo the steps.
 
-## Credits
-- Inspired by: [AAMirror](https://github.com/slashmax/AAMirror)
-- Whitelist queries taken from: [AA-Phenotype-Patcher](https://github.com/Eselter/AA-Phenotype-Patcher)
-- Wouldn't be possible without: [AAuto-SDK](https://github.com/martoreto/aauto-sdk)
-
 ## Settings Activity guide
 <img align="right" src="img/settings.gif" alt="Settings Activity" height="500">
 
@@ -52,3 +47,25 @@
 - **About**
   - Click on the app icon for 10 times to enable debug mode.
   - This adds a new option in car display to see the logs of the app.
+  
+## Car Activity guide
+<img align="right" src="img/android_auto.gif" alt="Car Activity" height="500">
+
+- **Menu close button**
+  - Click here to close the sidebar.
+- **Menu back button**
+  - Click here to send back press command to the device.
+- **Menu app drawer button**
+  - Click here to show all apps available in your device.
+  - Long press an app icon to add or remove the app to your favorites.
+- **Menu favorite apps button**
+  - Click here to list all your favorite apps.
+  - Long click on an app icon to remove it from your favorites.
+- **Menu debug button**
+  - Visible only if debug mode is enabled.
+  - Shows all app logs in real time for debugging.
+
+## Credits
+- Inspired by: [AAMirror](https://github.com/slashmax/AAMirror)
+- Whitelist queries taken from: [AA-Phenotype-Patcher](https://github.com/Eselter/AA-Phenotype-Patcher)
+- Wouldn't be possible without: [AAuto-SDK](https://github.com/martoreto/aauto-sdk)

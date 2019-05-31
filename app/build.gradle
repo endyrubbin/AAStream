@@ -9,7 +9,7 @@ android {
         applicationId "com.garage.aastream"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 2
+        versionCode 3
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }

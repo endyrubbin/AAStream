@@ -71,7 +71,7 @@ class PreferenceHandler(context: Application) {
         const val KEY_BRIGHTNESS_VALUE = "brightness_value"
         const val KEY_SIDEBAR_SWITCH = "sidebar_switch"
         const val KEY_STARTUP_VALUE = "sidebar_value"
-        const val KEY_DEBUG_ENABLED = "debug_enabled"
+        const val KEY_DEBUG_DISABLED = "debug_enabled"
         const val KEY_OPEN_MENU_METHOD = "menu_open_method"
     }
 }

@@ -71,14 +71,14 @@ class SettingsActivity : AppCompatActivity() {
         }
         settings_debug_switch.setOnCheckedChangeListener { _, isChecked ->
             DevLog.d("Debug switch changed: $isChecked")
-            preferences.putBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, !isChecked)
-            view_settings_debug.visibility = if (isChecked) View.VISIBLE else View.GONE
+            preferences.putBoolean(PreferenceHandler.KEY_DEBUG_DISABLED, isChecked)
+            view_settings_debug.visibility = if (isChecked) View.GONE else View.VISIBLE
         }
-        settings_debug_switch.isChecked = !preferences.getBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, BuildConfig.DEBUG)
-        view_settings_debug.visibility = if (preferences.getBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, BuildConfig.DEBUG)) {
-            View.VISIBLE
-        } else {
+        settings_debug_switch.isChecked = false
+        view_settings_debug.visibility = if (preferences.getBoolean(PreferenceHandler.KEY_DEBUG_DISABLED, true)) {
             View.GONE
+        } else {
+            View.VISIBLE
         }
 
         // Unlock controller
@@ -181,9 +181,9 @@ class SettingsActivity : AppCompatActivity() {
                 DevLog.d("Debug mode enabled")
                 Toast.makeText(this@SettingsActivity, getString(R.string.toast_developer_mode_enabled),
                     Toast.LENGTH_LONG).show()
-                preferences.putBoolean(PreferenceHandler.KEY_DEBUG_ENABLED, true)
+                preferences.putBoolean(PreferenceHandler.KEY_DEBUG_DISABLED, false)
                 view_settings_debug.visibility = View.VISIBLE
-                settings_debug_switch.isChecked = true
+                settings_debug_switch.isChecked = false
             } else if (count >= Const.DEBUG_CLICK_COUNT - 3 && count < Const.DEBUG_CLICK_COUNT) {
                 Toast.makeText(this@SettingsActivity, getString(R.string.toast_developer_mode_click,
                     (Const.DEBUG_CLICK_COUNT - count)), Toast.LENGTH_SHORT).show()
