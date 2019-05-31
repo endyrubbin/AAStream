@@ -3,7 +3,7 @@
 ## About
 **AA Stream** is an unofficial and unsupported device screen mirroring application inspired by [AAMirror](https://github.com/slashmax/AAMirror) for Android Auto. 
 
-**Use it with causion! I don't take any responsibility for the missuse of the application. You have been warned.**
+**Use it with caution! I don't take any responsibility for the misuse of the application. You have been warned.**
 
 ## Prerequisites and usage
 #### To use this application:
@@ -23,7 +23,7 @@
 #### Whitelist AA Stream for Android Auto
 - Open **AA Stream**.
 - Click on `Unlock for Android Auto`.
-- If green checkmark and a Toast message with success is shown - you are good to go. (If not - ensure your device is rooted).
+- If green check mark and a Toast message with success is shown - you are good to go. (If not - ensure your device is rooted).
 - Restart device for the changes to take effect.
 - Connect the device to your car and select **AA Stream** from all apps menu (Last icon on the right in cars display), if **AA Stream** is not there, redo the steps.
 
@@ -33,11 +33,11 @@
 - Wouldn't be possible without: [AAuto-SDK](https://github.com/martoreto/aauto-sdk)
 
 ## Settings Activity guide
-<img align="right" src="img/settings.png" alt="Settings Activity" height="500">
+<img align="right" src="img/settings.gif" alt="Settings Activity" height="500">
 
 - **Unlock for Android Auto**
   - Click here to whitelist **AA Stream** for Android Auto. Root permission is required!
-  - **AA Stream** is successfully unlocked if a green chekmark is visible.
+  - **AA Stream** is successfully unlocked if a green chek mark is visible.
 - **Overwrite screen brightness**
   - Enable this setting to override device brightness when **AA Stream** is started from Android Auto.
   - Use this to save device battery as the device screen needs to be always on to mirror it in cars display.
@@ -47,7 +47,8 @@
 - **Show sidebar on startup**
   - Enable this to show sidebar menu on **AA Stream** startup.
   - Choose which menu option should be shown when sidebar is opened.
-  - Set it to `Favorites` to show your favorited apps (To favorite and unfavorite an app from app list, press and hold the app icon for few seconds).
+  - Set it to `Favorites` to show your favorite apps (To add or remove an app to favorites, press and hold an app icon for few seconds).
+  - Choose how to open sidebar menu, wit two finger tap, double or triple taps.
 - **About**
   - Click on the app icon for 10 times to enable debug mode.
   - This adds a new option in car display to see the logs of the app.
