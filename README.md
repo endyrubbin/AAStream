@@ -51,6 +51,7 @@
 ## Car Activity guide
 <img align="right" src="img/android_auto.gif" alt="Car Activity" height="500">
 
+
 - **Menu close button**
   - Click here to close the sidebar.
 - **Menu back button**
