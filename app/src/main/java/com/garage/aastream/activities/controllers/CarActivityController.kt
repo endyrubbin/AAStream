@@ -26,10 +26,7 @@ import com.garage.aastream.R
 import com.garage.aastream.activities.ResultRequestActivity
 import com.garage.aastream.adapters.AppListAdapter
 import com.garage.aastream.handlers.*
-import com.garage.aastream.interfaces.OnAppClickedCallback
-import com.garage.aastream.interfaces.OnAppListLoadedCallback
-import com.garage.aastream.interfaces.OnMenuTapCallback
-import com.garage.aastream.interfaces.OnScreenLockCallback
+import com.garage.aastream.interfaces.*
 import com.garage.aastream.minitouch.MiniTouchHandler
 import com.garage.aastream.models.AppItem
 import com.garage.aastream.receivers.ScreenLockReceiver
@@ -49,7 +46,7 @@ import javax.inject.Inject
  * For project: AAStream
  */
 class CarActivityController(val context: Application) : OnScreenLockCallback, OnAppClickedCallback,
-    OnAppListLoadedCallback, OnMenuTapCallback {
+    OnAppListLoadedCallback, OnMenuTapCallback, OnRotationChangedCallback {
 
     @Inject lateinit var appHandler: AppHandler
     @Inject lateinit var preferences: PreferenceHandler
@@ -101,7 +98,9 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
 
     private class ShellAsyncTask(val shell: Shell.Interactive) : AsyncTask<String, Void, Void>() {
         override fun doInBackground(vararg params: String): Void? {
-            DevLog.d("Executing shell command: $params")
+            params.forEach {
+                DevLog.d("Executing shell command: $it")
+            }
             shell.addCommand(params[0])
             return null
         }
@@ -130,6 +129,12 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         this.windowManager = windowManager
         this.carUiController = carUiController
         terminalController.init(rootView)
+
+        Thread.setDefaultUncaughtExceptionHandler { t, e ->
+            DevLog.d("App has crashed")
+            onDestroy()
+        }
+
         startMinitouch()
         initViews()
         initCarUiController()
@@ -188,6 +193,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      * Called when Activity configuration has changed
      */
     fun onConfigurationChanged() {
+        DevLog.d("Configuration changed")
         miniTouchHandler.updateValues()
     }
 
@@ -245,6 +251,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      * Initialize views and set listeners
      */
     private fun initViews() {
+        DevLog.d("Initializing views")
         orientationListener = object : OrientationEventListener(context) {
             override fun onOrientationChanged(orientation: Int) {
                 miniTouchHandler.updateValues()
@@ -577,6 +584,14 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     override fun onTapForMenu() {
         DevLog.d("Show menu from tap")
         switchMenuVisibility(true)
+    }
+
+    /**
+     * Called when device rotation has changed
+     */
+    override fun onRotationChanged() {
+        DevLog.d("Rotation changed")
+        miniTouchHandler.updateValues()
     }
 
     /**

@@ -53,6 +53,7 @@ class MiniTouchHandler(
         val windowManager = context.applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
         windowManager.defaultDisplay.getRealSize(deviceScreenSize)
         deviceScreenRotation = windowManager.defaultDisplay.rotation
+        DevLog.d("Updating values: $deviceScreenRotation")
         if (deviceScreenRotation == ROTATION_0 || deviceScreenRotation == ROTATION_180) {
             deviceDisplaySize.x = deviceScreenSize.x
             deviceDisplaySize.y = deviceScreenSize.y
@@ -60,6 +61,7 @@ class MiniTouchHandler(
             deviceDisplaySize.x = deviceScreenSize.y
             deviceDisplaySize.y = deviceScreenSize.x
         }
+        updateTouchTransformations(true)
     }
 
     @SuppressLint("ClickableViewAccessibility")

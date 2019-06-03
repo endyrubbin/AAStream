@@ -2,11 +2,11 @@ package com.garage.aastream.activities
 
 import android.content.res.Configuration
 import android.os.Bundle
-import com.google.android.apps.auto.sdk.CarActivity
 import com.garage.aastream.App
 import com.garage.aastream.R
 import com.garage.aastream.activities.controllers.CarActivityController
 import com.garage.aastream.utils.DevLog
+import com.google.android.apps.auto.sdk.CarActivity
 import javax.inject.Inject
 
 /**
@@ -22,6 +22,7 @@ class CarMainActivity : CarActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_car)
         (applicationContext as App).component.inject(this)
+        (applicationContext as App).setRotationCallback(activityController)
 
         DevLog.d("Car debug activity created")
         activityController.onCreate(c().decorView, c().windowManager,
