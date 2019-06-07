@@ -70,4 +70,10 @@ class InjectionModule(private val context: Application) {
     fun provideTerminalController(): TerminalController {
         return TerminalController()
     }
+
+    @Singleton
+    @Provides
+    fun provideNotificationHandler(): NotificationHandler {
+        return NotificationHandler(context)
+    }
 }

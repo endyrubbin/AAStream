@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.garage.aastream.App
 import com.garage.aastream.R
 import com.garage.aastream.activities.controllers.CarActivityController
+import com.garage.aastream.handlers.NotificationHandler
 import com.garage.aastream.utils.DevLog
 import javax.inject.Inject
 
@@ -29,7 +30,13 @@ class CarDebugActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        activityController.onResume()
+        if (intent.hasExtra(NotificationHandler.ACTION_EXIT)) {
+            intent.removeExtra(NotificationHandler.ACTION_EXIT)
+            finish()
+            activityController.finish()
+        } else {
+            activityController.onResume()
+        }
     }
 
     override fun onStart() {

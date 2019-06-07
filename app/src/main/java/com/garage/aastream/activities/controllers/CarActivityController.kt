@@ -14,6 +14,9 @@ import android.media.projection.MediaProjectionManager
 import android.os.AsyncTask
 import android.os.Handler
 import android.os.Looper
+import android.os.PowerManager
+import android.os.PowerManager.ACQUIRE_CAUSES_WAKEUP
+import android.os.PowerManager.SCREEN_DIM_WAKE_LOCK
 import android.util.DisplayMetrics
 import android.view.KeyEvent
 import android.view.OrientationEventListener
@@ -30,6 +33,8 @@ import com.garage.aastream.interfaces.*
 import com.garage.aastream.minitouch.MiniTouchHandler
 import com.garage.aastream.models.AppItem
 import com.garage.aastream.receivers.ScreenLockReceiver
+import com.garage.aastream.receivers.UsbStateReceiver
+import com.garage.aastream.receivers.UsbStateReceiver.UsbStateCallback
 import com.garage.aastream.utils.Const
 import com.garage.aastream.utils.DevLog
 import com.garage.aastream.views.MarginDecoration
@@ -46,7 +51,7 @@ import javax.inject.Inject
  * For project: AAStream
  */
 class CarActivityController(val context: Application) : OnScreenLockCallback, OnAppClickedCallback,
-    OnAppListLoadedCallback, OnMenuTapCallback, OnRotationChangedCallback {
+    OnAppListLoadedCallback, OnMenuTapCallback, OnRotationChangedCallback, UsbStateCallback {
 
     @Inject lateinit var appHandler: AppHandler
     @Inject lateinit var preferences: PreferenceHandler
@@ -55,14 +60,14 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     @Inject lateinit var miniTouchHandler: MiniTouchHandler
     @Inject lateinit var audioHandler: AudioHandler
     @Inject lateinit var terminalController: TerminalController
+    @Inject lateinit var notificationHandler: NotificationHandler
 
     private lateinit var rootView: View
     private lateinit var windowManager: WindowManager
     private lateinit var adapter: AppListAdapter
     private lateinit var orientationListener: OrientationEventListener
-    private var carUiController: CarUiController? = null
 
-    private val apps = ArrayList<AppItem>()
+    private var carUiController: CarUiController? = null
     private var currentView = ViewType.VIEW_NONE
     private var restarted = false
     private var initialMenuX = 0f
@@ -72,11 +77,17 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     private var projectionIntent: Intent? = null
     private var shell: Shell.Interactive? = null
 
+    private val apps = ArrayList<AppItem>()
     private val screenLockReceiver = ScreenLockReceiver(this)
-    private val filter = IntentFilter()
+    private val usbStateReceiver = UsbStateReceiver(this)
+    private val screenFilter = IntentFilter()
+    private val usbFilter = IntentFilter()
     private var minitouchDaemon: MinitouchDaemon? = null
     private var shellTask: ShellAsyncTask? = null
     private val shellExecutor = ShellDirectExecutor()
+    @Suppress("DEPRECATION")
+    private val wakeLock = (context.getSystemService(Context.POWER_SERVICE) as PowerManager).newWakeLock(
+        SCREEN_DIM_WAKE_LOCK or ACQUIRE_CAUSES_WAKEUP, WAKELOCK_TAG)
 
     private val requestHandler = Handler(Handler.Callback { msg ->
         if (msg?.what == Const.REQUEST_MEDIA_PROJECTION_PERMISSION) {
@@ -114,9 +125,10 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
 
     init {
         (context as App).component.inject(this)
-        filter.addAction(Intent.ACTION_USER_PRESENT)
-        filter.addAction(Intent.ACTION_SCREEN_ON)
-        filter.addAction(Intent.ACTION_SCREEN_OFF)
+        screenFilter.addAction(Intent.ACTION_USER_PRESENT)
+        screenFilter.addAction(Intent.ACTION_SCREEN_ON)
+        screenFilter.addAction(Intent.ACTION_SCREEN_OFF)
+        usbFilter.addAction(Intent.ACTION_POWER_DISCONNECTED)
     }
 
     /**
@@ -130,9 +142,9 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         this.carUiController = carUiController
         terminalController.init(rootView)
 
-        Thread.setDefaultUncaughtExceptionHandler { t, e ->
+        Thread.setDefaultUncaughtExceptionHandler { _, _ ->
             DevLog.d("App has crashed")
-            onDestroy()
+            finish()
         }
 
         startMinitouch()
@@ -156,11 +168,14 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     fun onStart() {
         DevLog.d("Car activity started")
         onScreenOn()
+        notificationHandler.showNotification()
+        wakeLock.acquire(Long.MAX_VALUE)
         audioHandler.start()
         orientationListener.enable()
         brightnessHandler.setScreenBrightness()
         rotationHandler.setScreenRotation()
-        context.registerReceiver(screenLockReceiver, filter)
+        context.registerReceiver(screenLockReceiver, screenFilter)
+        context.registerReceiver(usbStateReceiver, usbFilter)
     }
 
     /**
@@ -169,9 +184,11 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     fun onStop() {
         DevLog.d("Car activity stopped")
         onScreenOff()
+        if (wakeLock.isHeld) wakeLock.release()
         audioHandler.stop()
         orientationListener.disable()
         context.unregisterReceiver(screenLockReceiver)
+        context.unregisterReceiver(usbStateReceiver)
     }
 
     /**
@@ -183,6 +200,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         onScreenOff()
         stopMinitouch()
         if (!restarted) {
+            notificationHandler.clearNotification()
             brightnessHandler.restoreScreenBrightness()
             rotationHandler.restoreScreenRotation()
         }
@@ -201,6 +219,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      * Called when car activity focus has changed
      */
     fun onWindowFocusChanged() {
+        DevLog.d("On focus changed")
         updateScreenSize()
         startScreenCapture()
     }
@@ -245,6 +264,15 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
             Const.REQUEST_MEDIA_PROJECTION_PERMISSION,
             mediaProjectionManager.createScreenCaptureIntent()
         )
+    }
+
+    /**
+     * Finish the application
+     */
+    fun finish() {
+        restarted = false
+        onDestroy()
+        System.exit(0)
     }
 
     /**
@@ -669,7 +697,17 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         }
     }
 
+    /**
+     * Called when USB is disconnected
+     */
+    override fun onUsbDisconnected() {
+        DevLog.d("Usb disconnected")
+        finish()
+    }
+
     companion object {
+        const val WAKELOCK_TAG = "AAStream:WakeLock"
+
         enum class ViewType(val value: Int) {
             VIEW_NONE(0),
             VIEW_APP_LIST(1),

@@ -57,10 +57,12 @@
     <string name="txt_about_title">About</string>
     <string name="txt_endy_rubbin">© 2019 Endy Rubbin</string>
     <string name="txt_version">Version: %1$s</string>
+    <string name="txt_choose_open_sidebar_method">Choose open sidebar method</string>
+    <string name="txt_notification_exit">EXIT</string>
+    <string name="txt_app_running_notification">AA Stream is running, click exit to close the application.</string>
 
     <string name="toast_developer_mode_click">%1$d more clicks to enable developer mode</string>
     <string name="toast_developer_mode_enabled">Developer mode enabled</string>
     <string name="toast_app_whitelisted">Successfully whitelisted. Reboot phone and connect to Android Auto</string>
     <string name="toast_root_not_available">Root not available, install SuperSU and perform root first.</string>
-    <string name="txt_choose_open_sidebar_method">Choose open sidebar method</string>
 </resources>
