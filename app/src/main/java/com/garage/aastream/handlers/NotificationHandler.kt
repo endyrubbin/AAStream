@@ -12,7 +12,7 @@ import com.garage.aastream.R
 import com.garage.aastream.activities.CarDebugActivity
 
 /**
- * Created by Eddy Gorbunov on 07.06.2019 11:29.
+ * Created by Endy Rubbin on 07.06.2019 11:29.
  * For project: AAStream
  */
 class NotificationHandler(val context: Context) {
