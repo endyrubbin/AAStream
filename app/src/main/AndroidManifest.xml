@@ -47,6 +47,13 @@
             </intent-filter>
         </activity>
 
+        <activity
+                android:name=".activities.KillerActivity"
+                android:screenOrientation="portrait"
+                android:configChanges="screenSize|density|orientation|screenLayout"
+                android:launchMode="singleTop"
+        />
+
         <service
                 android:name="com.garage.aastream.services.CarService"
                 android:enabled="true"

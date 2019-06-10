@@ -53,11 +53,13 @@ class SettingsActivity : AppCompatActivity() {
         initViews()
     }
 
+    /**
+     * Check if app can modify System settings
+     */
     @TargetApi(Build.VERSION_CODES.M)
     private fun checkForSystemWritePermission() {
         if (!Settings.System.canWrite(this)) {
-            val intent = Intent(ACTION_MANAGE_WRITE_SETTINGS)
-            startActivity(intent)
+            startActivity(Intent(ACTION_MANAGE_WRITE_SETTINGS))
         }
     }
 

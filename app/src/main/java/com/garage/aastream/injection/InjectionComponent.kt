@@ -1,12 +1,13 @@
 package com.garage.aastream.injection
 
-import dagger.Component
 import com.garage.aastream.App
 import com.garage.aastream.activities.CarDebugActivity
 import com.garage.aastream.activities.CarMainActivity
+import com.garage.aastream.activities.KillerActivity
 import com.garage.aastream.activities.SettingsActivity
 import com.garage.aastream.activities.controllers.CarActivityController
 import com.garage.aastream.handlers.PreferenceHandler
+import dagger.Component
 import javax.inject.Singleton
 
 /**
@@ -21,6 +22,7 @@ interface InjectionComponent {
     fun inject(target: SettingsActivity)
     fun inject(target: CarMainActivity)
     fun inject(target: CarDebugActivity)
+    fun inject(target: KillerActivity)
     fun inject(target: CarActivityController)
 
     fun exposePreferenceHandler(): PreferenceHandler

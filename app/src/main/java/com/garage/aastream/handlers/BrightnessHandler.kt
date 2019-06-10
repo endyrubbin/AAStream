@@ -12,8 +12,20 @@ import com.garage.aastream.utils.DevLog
  */
 class BrightnessHandler(val context: Context, val preferences: PreferenceHandler) {
 
-    private val systemBrightness = (Settings.System.getInt(context.contentResolver,
-        SCREEN_BRIGHTNESS).toFloat() / 255 * 100).toInt()
+    private val systemBrightness: Int
+
+    init {
+        val savedSystemBrightness = preferences.getInt(PreferenceHandler.KEY_SYSTEM_BRIGHTNESS, -1)
+        val currentSystemBrightness = (Settings.System.getInt(context.contentResolver,
+            SCREEN_BRIGHTNESS).toFloat() / 255 * 100).toInt()
+        systemBrightness = if (savedSystemBrightness == -1) {
+            preferences.putInt(PreferenceHandler.KEY_SYSTEM_BRIGHTNESS, currentSystemBrightness)
+            currentSystemBrightness
+        } else {
+            savedSystemBrightness
+        }
+    }
+
 
     /**
      * @return true if brightness can be changed
@@ -50,5 +62,6 @@ class BrightnessHandler(val context: Context, val preferences: PreferenceHandler
     fun restoreScreenBrightness() {
         DevLog.d("Restoring screen brightness $systemBrightness")
         setScreenBrightness(systemBrightness)
+        preferences.putInt(PreferenceHandler.KEY_SYSTEM_BRIGHTNESS, -1)
     }
 }

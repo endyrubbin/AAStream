@@ -9,7 +9,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.os.Build
 import com.garage.aastream.R
-import com.garage.aastream.activities.CarDebugActivity
+import com.garage.aastream.activities.KillerActivity
 
 /**
  * Created by Endy Rubbin on 07.06.2019 11:29.
@@ -33,7 +33,7 @@ class NotificationHandler(val context: Context) {
         val title = context.getString(R.string.app_name)
         val message = context.getString(R.string.txt_app_running_notification)
 
-        val notifyIntent = Intent(context, CarDebugActivity::class.java)
+        val notifyIntent = Intent(context, KillerActivity::class.java)
         notifyIntent.putExtra(ACTION_EXIT, true)
         notifyIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
         notifyIntent.flags = Intent.FLAG_ACTIVITY_REORDER_TO_FRONT

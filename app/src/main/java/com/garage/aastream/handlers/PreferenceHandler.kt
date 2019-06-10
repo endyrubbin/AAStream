@@ -69,6 +69,7 @@ class PreferenceHandler(context: Application) {
         const val KEY_ROTATION_VALUE = "rotation_value"
         const val KEY_BRIGHTNESS_SWITCH = "brightness_switch"
         const val KEY_BRIGHTNESS_VALUE = "brightness_value"
+        const val KEY_SYSTEM_BRIGHTNESS = "system_brightness"
         const val KEY_SIDEBAR_SWITCH = "sidebar_switch"
         const val KEY_STARTUP_VALUE = "sidebar_value"
         const val KEY_DEBUG_DISABLED = "debug_enabled"

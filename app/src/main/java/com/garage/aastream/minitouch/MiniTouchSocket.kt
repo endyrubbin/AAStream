@@ -3,11 +3,10 @@ package com.garage.aastream.minitouch
 import android.graphics.Point
 import android.net.LocalSocket
 import android.net.LocalSocketAddress
+import com.garage.aastream.interfaces.OnMinitouchCallback
 import com.garage.aastream.utils.DevLog
 import java.io.InputStream
 import java.io.OutputStream
-import java.net.InetAddress
-import java.net.Socket
 
 /**
  * Created by Endy Rubbin on 22.05.2019 13:25.
@@ -16,7 +15,6 @@ import java.net.Socket
 class MiniTouchSocket {
 
     private var socketLocal: LocalSocket? = null
-    private var socketTcp: Socket? = null
     private var outputStream: OutputStream? = null
 
     private var version: Int = 0
@@ -33,28 +31,22 @@ class MiniTouchSocket {
     private var touchXScale: Double = 0.toDouble()
     private var touchYScale: Double = 0.toDouble()
 
-    internal fun connect(local: Boolean): Boolean {
-        DevLog.d("Mini Touch connect")
-        return if (local) {
-            connectLocal()
-        } else {
-            connectTcp()
+    internal fun disconnect() {
+        DevLog.d("Mini Touch disconnect")
+        if (isConnected()) {
+            try {
+                socketLocal!!.close()
+            } catch (e: Exception) {
+                DevLog.d("Failed to disconnect socket: $e")
+            }
+            outputStream = null
+            socketLocal = null
         }
     }
 
-    internal fun disconnect() {
-        DevLog.d("Mini Touch disconnect")
-        disconnectLocal()
-        disconnectTcp()
-    }
-
-    internal fun isConnected(): Boolean {
-        return isConnectedLocal() || isConnectedTcp()
-    }
-
-    private fun connectLocal(): Boolean {
-        DevLog.d("Mini Touch connect local socket")
-        disconnectLocal()
+    internal fun connect(callback: OnMinitouchCallback?): Boolean {
+        DevLog.d("Mini Touch connect socket")
+        disconnect()
         val socket = LocalSocket()
         try {
             socket.connect(LocalSocketAddress(DEFAULT_SOCKET_NAME))
@@ -65,65 +57,15 @@ class MiniTouchSocket {
                 socket.close()
             }
         } catch (e: Exception) {
-            DevLog.d("Failed to connect local socket: $e")
+            DevLog.d("Failed to connect socket: $e")
             socketLocal = null
+            callback?.onFailed()
         }
-        return isConnectedLocal()
+        return isConnected()
     }
 
-    private fun disconnectLocal() {
-        DevLog.d("Mini Touch disconnect Local socket")
-        if (isConnectedLocal()) {
-            try {
-                socketLocal!!.close()
-            } catch (e: Exception) {
-                DevLog.d("Failed to disconnect local socket: $e")
-            }
-            outputStream = null
-            socketLocal = null
-        }
-    }
-
-    private fun isConnectedLocal(): Boolean {
+    fun isConnected(): Boolean {
         return socketLocal != null
-    }
-
-    private fun connectTcp(): Boolean {
-        DevLog.d("Mini Touch connect Tcp socket")
-        disconnectTcp()
-        try {
-            val serverAddress = InetAddress.getByName("127.0.0.1")
-            val socket = Socket(serverAddress, 1111)
-            if (inputReadParams(socket.getInputStream())) {
-                outputStream = socket.getOutputStream()
-                socketTcp = socket
-            } else {
-                socket.close()
-            }
-        } catch (e: Exception) {
-            DevLog.d("Failed to connect Tcp socket: $e")
-            socketTcp = null
-        }
-
-        return isConnectedTcp()
-    }
-
-    private fun disconnectTcp() {
-        DevLog.d("Mini Touch disconnect Tcp socket")
-        if (isConnectedTcp()) {
-            try {
-                socketTcp!!.close()
-            } catch (e: Exception) {
-                DevLog.d("Failed to disconnect Tcp socket: $e")
-            }
-
-            outputStream = null
-            socketTcp = null
-        }
-    }
-
-    private fun isConnectedTcp(): Boolean {
-        return socketTcp != null
     }
 
     internal fun getPid(): Int {

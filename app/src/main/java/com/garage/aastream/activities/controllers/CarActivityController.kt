@@ -11,7 +11,6 @@ import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
-import android.os.AsyncTask
 import android.os.Handler
 import android.os.Looper
 import android.os.PowerManager
@@ -31,10 +30,13 @@ import com.garage.aastream.adapters.AppListAdapter
 import com.garage.aastream.handlers.*
 import com.garage.aastream.interfaces.*
 import com.garage.aastream.minitouch.MiniTouchHandler
+import com.garage.aastream.minitouch.MinitouchDaemon
 import com.garage.aastream.models.AppItem
 import com.garage.aastream.receivers.ScreenLockReceiver
 import com.garage.aastream.receivers.UsbStateReceiver
 import com.garage.aastream.receivers.UsbStateReceiver.UsbStateCallback
+import com.garage.aastream.shell.ShellAsyncTask
+import com.garage.aastream.shell.ShellDirectExecutor
 import com.garage.aastream.utils.Const
 import com.garage.aastream.utils.DevLog
 import com.garage.aastream.views.MarginDecoration
@@ -43,7 +45,6 @@ import com.google.android.apps.auto.sdk.DayNightStyle
 import eu.chainfire.libsuperuser.Shell
 import kotlinx.android.synthetic.main.activity_car.view.*
 import kotlinx.android.synthetic.main.view_car_terminal.view.*
-import java.util.concurrent.Executor
 import javax.inject.Inject
 
 /**
@@ -51,7 +52,7 @@ import javax.inject.Inject
  * For project: AAStream
  */
 class CarActivityController(val context: Application) : OnScreenLockCallback, OnAppClickedCallback,
-    OnAppListLoadedCallback, OnMenuTapCallback, OnRotationChangedCallback, UsbStateCallback {
+    OnAppListLoadedCallback, OnMenuTapCallback, OnRotationChangedCallback, OnMinitouchCallback, UsbStateCallback {
 
     @Inject lateinit var appHandler: AppHandler
     @Inject lateinit var preferences: PreferenceHandler
@@ -70,6 +71,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     private var carUiController: CarUiController? = null
     private var currentView = ViewType.VIEW_NONE
     private var restarted = false
+    private var destroyed = false
     private var initialMenuX = 0f
     private var virtualDisplay: VirtualDisplay? = null
     private var mediaProjection: MediaProjection? = null
@@ -83,7 +85,6 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     private val screenFilter = IntentFilter()
     private val usbFilter = IntentFilter()
     private var minitouchDaemon: MinitouchDaemon? = null
-    private var shellTask: ShellAsyncTask? = null
     private val shellExecutor = ShellDirectExecutor()
     @Suppress("DEPRECATION")
     private val wakeLock = (context.getSystemService(Context.POWER_SERVICE) as PowerManager).newWakeLock(
@@ -98,30 +99,6 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         }
         false
     })
-
-    private class MinitouchDaemon(val miniTouchHandler: MiniTouchHandler) : AsyncTask<Void, Void, Void>() {
-        override fun doInBackground(vararg voids: Void): Void? {
-            DevLog.d("Minitouch daemon started")
-            miniTouchHandler.start()
-            return null
-        }
-    }
-
-    private class ShellAsyncTask(val shell: Shell.Interactive) : AsyncTask<String, Void, Void>() {
-        override fun doInBackground(vararg params: String): Void? {
-            params.forEach {
-                DevLog.d("Executing shell command: $it")
-            }
-            shell.addCommand(params[0])
-            return null
-        }
-    }
-
-    private inner class ShellDirectExecutor : Executor {
-        override fun execute(r: Runnable) {
-            Thread(r).start()
-        }
-    }
 
     init {
         (context as App).component.inject(this)
@@ -142,12 +119,12 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         this.carUiController = carUiController
         terminalController.init(rootView)
 
-        Thread.setDefaultUncaughtExceptionHandler { _, _ ->
-            DevLog.d("App has crashed")
+        Thread.setDefaultUncaughtExceptionHandler { _, e ->
+            e.printStackTrace()
+            DevLog.d("App has crashed: ${e.localizedMessage}")
             finish()
         }
 
-        startMinitouch()
         initViews()
         initCarUiController()
         requestProjectionPermission()
@@ -157,6 +134,8 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      * Called when Activity is resumed
      */
     fun onResume() {
+        startShell()
+        startMinitouch()
         miniTouchHandler.updateValues()
         loadApps()
         DevLog.d("Car activity resumed")
@@ -196,6 +175,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      */
     fun onDestroy() {
         DevLog.d("Car activity destroyed $restarted")
+        destroyed = true
         terminalController.stop()
         onScreenOff()
         stopMinitouch()
@@ -204,6 +184,8 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
             brightnessHandler.restoreScreenBrightness()
             rotationHandler.restoreScreenRotation()
         }
+        shell?.close()
+        shell = null
         restarted = false
     }
 
@@ -219,21 +201,31 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      * Called when car activity focus has changed
      */
     fun onWindowFocusChanged() {
-        DevLog.d("On focus changed")
-        updateScreenSize()
-        startScreenCapture()
+        DevLog.d("On focus changed $destroyed $restarted")
+        if (!destroyed) {
+            updateScreenSize()
+            startScreenCapture()
+        }
     }
 
     /**
      * Start mini touch daemon
      */
     private fun startMinitouch() {
-        minitouchDaemon = MinitouchDaemon(miniTouchHandler)
-        miniTouchHandler.init(rootView.car_surface_view, this)
-        if (Shell.SU.available()) {
+        DevLog.d("Starting minitouch")
+        if (minitouchDaemon == null) {
+            minitouchDaemon = MinitouchDaemon(miniTouchHandler, this)
             minitouchDaemon?.execute()
+        }
+        miniTouchHandler.init(rootView.car_surface_view, this)
+    }
+
+    /**
+     * Start shell session if root granted
+     */
+    private fun startShell() {
+        if (Shell.SU.available()) {
             shell = Shell.Builder().useSU().open()
-            shellTask = ShellAsyncTask(shell!!)
         }
     }
 
@@ -244,7 +236,6 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         miniTouchHandler.clear()
         miniTouchHandler.stop()
         minitouchDaemon?.cancel(true)
-        shell?.close()
     }
 
     /**
@@ -269,7 +260,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     /**
      * Finish the application
      */
-    fun finish() {
+    private fun finish() {
         restarted = false
         onDestroy()
         System.exit(0)
@@ -502,7 +493,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     private fun startScreenCapture() {
         Handler(Looper.getMainLooper()).postDelayed({
             rootView.car_surface_view.post {
-                DevLog.d("Will starting screen capture if ($projectionCode) != 0 && ($projectionIntent) != null")
+                DevLog.d("Will start screen capture if ($projectionCode) != 0 && ($projectionIntent) != null")
                 if (projectionIntent != null || projectionCode != 0) {
                     stopScreenCapture()
                     DevLog.d("Starting screen capture $projectionCode $projectionIntent")
@@ -620,6 +611,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     override fun onRotationChanged() {
         DevLog.d("Rotation changed")
         miniTouchHandler.updateValues()
+        onWindowFocusChanged()
     }
 
     /**
@@ -703,6 +695,29 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     override fun onUsbDisconnected() {
         DevLog.d("Usb disconnected")
         finish()
+    }
+
+    /**
+     * Called when minitouch installed on path
+     */
+    override fun onInstalled(path: String) {
+        shell?.let {
+            DevLog.d("Initializing minitouch on $path")
+            ShellAsyncTask(it).executeOnExecutor(shellExecutor, "chmod 777 $path")
+            ShellAsyncTask(it).executeOnExecutor(shellExecutor, path)
+            DevLog.d("Mini Touch started: $path")
+            miniTouchHandler.isInstalled = true
+        }
+    }
+
+    /**
+     * Called when minitouch has failed
+     */
+    override fun onFailed() {
+        DevLog.d("Failed to install minitouch, trying again")
+        minitouchDaemon?.cancel(true)
+        minitouchDaemon = null
+        startMinitouch()
     }
 
     companion object {
