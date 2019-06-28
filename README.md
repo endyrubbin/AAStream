@@ -18,7 +18,7 @@ Get the latest APK [here](https://github.com/endyrubbin/AAStream/tree/master/apk
 - Install and open the `Android Auto` App
 - Select the `About` section from menu.
 - Click the Header `About Android Auto` a few times, until the dev mode is turned on.
-- Click the `Menu` (3 dots) buutton and open `Developer Settings`.
+- Click the `Menu` (3 dots) button and open `Developer Settings`.
 - Set the `Application Mode` to `Developer`.
 - Scroll down and ensure `Unknown sources` is checked.
 
@@ -34,7 +34,7 @@ Get the latest APK [here](https://github.com/endyrubbin/AAStream/tree/master/apk
 
 - **Unlock for Android Auto**
   - Click here to whitelist **AA Stream** for Android Auto. Root permission is required!
-  - **AA Stream** is successfully unlocked if a green chek mark is visible.
+  - **AA Stream** is successfully unlocked if a green check mark is visible.
 - **Overwrite screen brightness**
   - Enable this setting to override device brightness when **AA Stream** is started from Android Auto.
   - Use this to save device battery as the device screen needs to be always on to mirror it in cars display.
