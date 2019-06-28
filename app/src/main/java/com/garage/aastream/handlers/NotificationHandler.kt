@@ -43,8 +43,6 @@ class NotificationHandler(val context: Context) {
 
         val notification = builder
             .setSmallIcon(R.drawable.ic_small_icon)
-            .setOngoing(true)
-            .setAutoCancel(false)
             .setOnlyAlertOnce(true)
             .setPriority(Notification.PRIORITY_MAX)
             .setContentTitle(title)

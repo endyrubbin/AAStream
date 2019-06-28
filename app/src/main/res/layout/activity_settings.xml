@@ -33,6 +33,12 @@
         <View style="@style/DividerStyle"/>
 
         <!-- Rotation control -->
+        <include layout="@layout/view_settings_resize"
+                 android:id="@+id/view_settings_resize" />
+
+        <View style="@style/DividerStyle"/>
+
+        <!-- Rotation control -->
         <include layout="@layout/view_settings_sidebar"
                  android:id="@+id/view_settings_sidebar" />
 

@@ -24,7 +24,7 @@ class CarDebugActivity : AppCompatActivity() {
         (application as App).component.inject(this)
 
         DevLog.d("Car debug activity created")
-        activityController.onCreate(window.decorView, windowManager, savedInstanceState == null)
+        activityController.onCreate(window.decorView, windowManager)
     }
 
     override fun onResume() {

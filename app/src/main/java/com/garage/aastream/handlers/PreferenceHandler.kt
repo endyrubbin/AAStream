@@ -74,5 +74,6 @@ class PreferenceHandler(context: Application) {
         const val KEY_STARTUP_VALUE = "sidebar_value"
         const val KEY_DEBUG_DISABLED = "debug_enabled"
         const val KEY_OPEN_MENU_METHOD = "menu_open_method"
+        const val KEY_RESIZE_ENABLED = "resize_enabled"
     }
 }

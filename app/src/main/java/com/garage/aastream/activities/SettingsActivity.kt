@@ -26,6 +26,7 @@ import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.view_settings_about.*
 import kotlinx.android.synthetic.main.view_settings_brightness.*
 import kotlinx.android.synthetic.main.view_settings_debug.*
+import kotlinx.android.synthetic.main.view_settings_resize.*
 import kotlinx.android.synthetic.main.view_settings_rotation.*
 import kotlinx.android.synthetic.main.view_settings_sidebar.*
 import kotlinx.android.synthetic.main.view_settings_unlock.*
@@ -132,6 +133,16 @@ class SettingsActivity : AppCompatActivity() {
             settings_rotation_dropdown.isEnabled = isChecked
         }
         settings_rotation_dropdown.isEnabled = settings_rotation_switch.isChecked
+
+        // Resize controller
+        settings_resize_switch.isChecked = preferences.getBoolean(PreferenceHandler.KEY_RESIZE_ENABLED, false)
+        settings_resize_switch.setOnCheckedChangeListener { _, isChecked ->
+            DevLog.d("Resize switch changed: $isChecked")
+            if (isChecked) {
+                checkForSystemWritePermission()
+            }
+            preferences.putBoolean(PreferenceHandler.KEY_RESIZE_ENABLED, isChecked)
+        }
 
         // Sidebar controller
         val sidebarAdapter = ArrayAdapter.createFromResource(this, R.array.screen_values,

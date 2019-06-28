@@ -7,44 +7,34 @@
         android:layout_height="wrap_content">
 
     <LinearLayout
-            android:id="@+id/settings_rotation_holder"
+            android:id="@+id/settings_resize_holder"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/settings_rotation_switch"
+            app:layout_constraintEnd_toStartOf="@id/settings_resize_switch"
             app:layout_constraintStart_toStartOf="parent">
 
         <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/txt_force_screen_rotation_title"
+                android:text="@string/txt_force_resize_title"
                 style="@style/TitleTextStyle"/>
 
         <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/txt_force_screen_rotation_subtitle"
+                android:text="@string/txt_force_resize_subtitle"
                 style="@style/SubtitleTextStyle"/>
 
     </LinearLayout>
 
     <androidx.appcompat.widget.SwitchCompat
-            android:id="@+id/settings_rotation_switch"
+            android:id="@+id/settings_resize_switch"
             style="@style/SwitchStyle"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/settings_rotation_holder"
-            app:layout_constraintBottom_toBottomOf="@id/settings_rotation_holder"
-            app:layout_constraintTop_toTopOf="@id/settings_rotation_holder"/>
-
-    <androidx.appcompat.widget.AppCompatSpinner
-            android:id="@+id/settings_rotation_dropdown"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/SpinnerStyle"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/settings_rotation_holder"/>
+            app:layout_constraintStart_toEndOf="@id/settings_resize_holder"
+            app:layout_constraintBottom_toBottomOf="@id/settings_resize_holder"
+            app:layout_constraintTop_toTopOf="@id/settings_resize_holder"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

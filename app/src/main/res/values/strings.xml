@@ -65,4 +65,8 @@
     <string name="toast_developer_mode_enabled">Developer mode enabled</string>
     <string name="toast_app_whitelisted">Successfully whitelisted. Reboot phone and connect to Android Auto</string>
     <string name="toast_root_not_available">Root not available, install SuperSU and perform root first.</string>
+    <string name="txt_force_resize_title">Force screen resizing</string>
+    <string name="txt_force_resize_subtitle">Enable this setting to force the device screen to resize to fit cars
+        display
+    </string>
 </resources>

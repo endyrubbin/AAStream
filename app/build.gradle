@@ -3,14 +3,28 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-kapt'
 apply plugin: 'kotlin-android-extensions'
 
+def getVersionCode = { ->
+    try {
+        def stdout = new ByteArrayOutputStream()
+        exec {
+            commandLine 'git', 'rev-list', 'HEAD', '--count'
+            standardOutput = stdout
+        }
+        return Integer.parseInt(stdout.toString().trim())
+    }
+    catch (ignored) {
+        return -1
+    }
+}
+
 android {
     compileSdkVersion 28
     defaultConfig {
         applicationId "com.garage.aastream"
         minSdkVersion 21
         targetSdkVersion 28
-        versionCode 6
-        versionName "1.0"
+        versionCode getVersionCode()
+        versionName "1.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         archivesBaseName = "aa-stream-v$versionName.$versionCode"
     }

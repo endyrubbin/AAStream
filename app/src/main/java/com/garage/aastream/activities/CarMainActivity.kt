@@ -25,8 +25,7 @@ class CarMainActivity : CarActivity() {
         (applicationContext as App).setRotationCallback(activityController)
 
         DevLog.d("Car main activity created")
-        activityController.onCreate(c().decorView, c().windowManager,
-            savedInstanceState == null, carUiController)
+        activityController.onCreate(c().decorView, c().windowManager, carUiController)
         @Suppress("DEPRECATION")
         setIgnoreConfigChanges(0xFFFF)
     }

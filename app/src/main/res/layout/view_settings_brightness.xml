@@ -19,10 +19,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/txt_overwrite_screen_brightness_title"
-                style="@style/TitleTextStyle"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"/>
+                style="@style/TitleTextStyle"/>
 
         <TextView
                 android:layout_width="match_parent"
