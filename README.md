@@ -41,6 +41,8 @@ Get the latest APK [here](https://github.com/endyrubbin/AAStream/tree/master/apk
 - **Force screen rotation**
   - Enable this setting to force the device screen to be rotated to predefined degrees (0, 90, 180, 270).
   - Use this to start apps in landscape mode (If the app supports it).
+- **Force screen resizing**
+  - Enable this setting to force the device screen to be resized to match car display density.
 - **Show sidebar on startup**
   - Enable this to show sidebar menu on **AA Stream** startup.
   - Choose which menu option should be shown when sidebar is opened.
