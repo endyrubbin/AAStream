@@ -43,6 +43,10 @@ Get the latest APK [here](https://github.com/endyrubbin/AAStream/tree/master/apk
   - Use this to start apps in landscape mode (If the app supports it).
 - **Force screen resizing**
   - Enable this setting to force the device screen to be resized to match car display density.
+- **Force immersive mode**
+  - Enable this setting to force immersive mode (Hide device status bar).
+- **Force audio focus**
+  - Enable this setting to force audio focus when **AA Stream** is launched.
 - **Show sidebar on startup**
   - Enable this to show sidebar menu on **AA Stream** startup.
   - Choose which menu option should be shown when sidebar is opened.
