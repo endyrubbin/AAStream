@@ -76,4 +76,10 @@ class InjectionModule(private val context: Application) {
     fun provideNotificationHandler(): NotificationHandler {
         return NotificationHandler(context)
     }
+
+    @Singleton
+    @Provides
+    fun provideDisplayHandler(preferences: PreferenceHandler): DisplayHandler {
+        return DisplayHandler(context, preferences)
+    }
 }

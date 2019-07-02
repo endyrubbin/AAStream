@@ -49,7 +49,7 @@ class AudioHandler(
      * Request car audio focus
      */
     private fun requestAudioFocus(car: Car) {
-        if (!preferences.getBoolean(PreferenceHandler.KEY_REQUEST_AUDIO_FOCUS, true)) {
+        if (!preferences.getBoolean(PreferenceHandler.KEY_AUDIO_FOCUS, false)) {
             return
         }
         DevLog.d("RequestAudioFocus")

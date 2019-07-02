@@ -63,7 +63,7 @@ class PreferenceHandler(context: Application) {
     }
 
     companion object {
-        const val KEY_REQUEST_AUDIO_FOCUS = "request_audio_focus_on_connect"
+        const val KEY_AUDIO_FOCUS = "audio_focus"
         const val KEY_FAVORITE_APPS = "favorite_app_list"
         const val KEY_ROTATION_SWITCH = "rotation_switch"
         const val KEY_ROTATION_VALUE = "rotation_value"
@@ -75,5 +75,6 @@ class PreferenceHandler(context: Application) {
         const val KEY_DEBUG_DISABLED = "debug_enabled"
         const val KEY_OPEN_MENU_METHOD = "menu_open_method"
         const val KEY_RESIZE_ENABLED = "resize_enabled"
+        const val KEY_IMMERSIVE_MODE = "immersive_mode"
     }
 }

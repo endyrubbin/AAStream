@@ -14,7 +14,6 @@ import java.io.*
 class PhenotypePatcher(val context: Context) {
 
     private val path: String = context.applicationInfo.dataDir
-    private val whiteListStringFinal: String = context.applicationInfo.packageName
 
     /**
      * Runs DB injections to whitelist AA Stream application for Android Auto
@@ -25,6 +24,15 @@ class PhenotypePatcher(val context: Context) {
                 var suitableMethodFound = true
                 copyAssets()
 
+                // Preserve already whitelisted apps and append AA Stream if not already whitelisted
+                var whiteList = runSuWithCmd("$path/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
+                        "'SELECT stringVal FROM Flags WHERE packageName=\"com.google.android.gms.car#car\" LIMIT 1'"
+                ).getInputStreamLog()
+                if (!whiteList.contains(context.applicationInfo.packageName)) {
+                    whiteList += ",${context.applicationInfo.packageName}"
+                }
+
+                DevLog.d("Whitelisting apps: $whiteList")
                 DevLog.d(
                     runSuWithCmd(
                         "$path/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
@@ -45,76 +53,76 @@ class PhenotypePatcher(val context: Context) {
                     ).getInputStreamLog() == "1" -> {
                         DevLog.d(
                             runSuWithCmd(
-                                (path + "/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
+                                ("$path/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
                                         "'INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car#car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car#car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);'")
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);'")
                             ).getStreamLogsWithLabels()
                         )
 
                         DevLog.d(
                             runSuWithCmd(
-                                (path + "/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
+                                ("$path/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
                                         "'CREATE TRIGGER after_delete AFTER DELETE\n" +
                                         "ON Flags\n" +
                                         "BEGIN\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car#car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car#car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "END;'")
                             ).getStreamLogsWithLabels()
                         )
@@ -125,76 +133,76 @@ class PhenotypePatcher(val context: Context) {
                     ).getInputStreamLog() == "1" -> {
                         DevLog.d(
                             runSuWithCmd(
-                                (path + "/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
+                                ("$path/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
                                         "'INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);'")
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);'")
                             ).getStreamLogsWithLabels()
                         )
 
                         DevLog.d(
                             runSuWithCmd(
-                                (path + "/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
+                                ("$path/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
                                         "'CREATE TRIGGER after_delete AFTER DELETE\n" +
                                         "ON Flags\n" +
                                         "BEGIN\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
                                         "(SELECT version FROM Packages WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
-                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "230, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car_setup\", " +
-                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "234, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "END;'")
                             ).getStreamLogsWithLabels()
                         )
@@ -205,44 +213,44 @@ class PhenotypePatcher(val context: Context) {
                     ).getInputStreamLog() == "1" -> {
                         DevLog.d(
                             runSuWithCmd(
-                                (path + "/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
+                                ("$path/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
                                         "'INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
-                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
                                         "(SELECT version FROM ApplicationStates WHERE packageName=\"com.google.android.gms.car#car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
                                         "(SELECT version FROM ApplicationStates WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);'")
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);'")
                             ).getStreamLogsWithLabels()
                         )
 
                         DevLog.d(
                             runSuWithCmd(
-                                (path + "/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
+                                ("$path/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
                                         "'CREATE TRIGGER after_delete AFTER DELETE\n" +
                                         "ON Flags\n" +
                                         "BEGIN\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
-                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car#car\", " +
                                         "(SELECT version FROM ApplicationStates WHERE packageName=\"com.google.android.gms.car#car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
                                         "(SELECT version FROM ApplicationStates WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "END;'")
                             ).getStreamLogsWithLabels()
                         )
@@ -253,30 +261,30 @@ class PhenotypePatcher(val context: Context) {
                     ).getInputStreamLog() == "1" -> {
                         DevLog.d(
                             runSuWithCmd(
-                                (path + "/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
+                                ("$path/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
                                         "'INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
                                         "(SELECT version FROM ApplicationStates WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);'")
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);'")
                             ).getStreamLogsWithLabels()
                         )
 
                         DevLog.d(
                             runSuWithCmd(
-                                (path + "/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
+                                ("$path/sqlite3 /data/data/com.google.android.gms/databases/phenotype.db " +
                                         "'CREATE TRIGGER after_delete AFTER DELETE\n" +
                                         "ON Flags\n" +
                                         "BEGIN\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
-                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "240, 0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "INSERT OR REPLACE INTO Flags (packageName, version, flagType, partitionId, " +
                                         "user, name, stringVal, committed) VALUES (\"com.google.android.gms.car\", " +
                                         "(SELECT version FROM ApplicationStates WHERE packageName=\"com.google.android.gms.car\"), " +
-                                        "0, 0, \"\", \"app_white_list\", \"" + whiteListStringFinal + "\",1);\n" +
+                                        "0, 0, \"\", \"app_white_list\", \"" + whiteList + "\",1);\n" +
                                         "END;'")
                             ).getStreamLogsWithLabels()
                         )

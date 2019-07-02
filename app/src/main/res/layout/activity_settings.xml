@@ -32,13 +32,25 @@
 
         <View style="@style/DividerStyle"/>
 
-        <!-- Rotation control -->
+        <!-- Resize control -->
         <include layout="@layout/view_settings_resize"
                  android:id="@+id/view_settings_resize" />
 
         <View style="@style/DividerStyle"/>
 
-        <!-- Rotation control -->
+        <!-- Immersive control -->
+        <include layout="@layout/view_settings_immersive"
+                 android:id="@+id/view_settings_immersive" />
+
+        <View style="@style/DividerStyle"/>
+
+        <!-- Audio control -->
+        <include layout="@layout/view_settings_audio"
+                 android:id="@+id/view_settings_audio" />
+
+        <View style="@style/DividerStyle"/>
+
+        <!-- Sidebar control -->
         <include layout="@layout/view_settings_sidebar"
                  android:id="@+id/view_settings_sidebar" />
 

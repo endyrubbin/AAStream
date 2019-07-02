@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:padding="16dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+    <LinearLayout
+            android:id="@+id/settings_audio_holder"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/settings_audio_switch"
+            app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/txt_force_audio_title"
+                style="@style/TitleTextStyle"/>
+
+        <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/txt_force_audio_subtitle"
+                style="@style/SubtitleTextStyle"/>
+
+    </LinearLayout>
+
+    <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/settings_audio_switch"
+            style="@style/SwitchStyle"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/settings_audio_holder"
+            app:layout_constraintBottom_toBottomOf="@id/settings_audio_holder"
+            app:layout_constraintTop_toTopOf="@id/settings_audio_holder"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

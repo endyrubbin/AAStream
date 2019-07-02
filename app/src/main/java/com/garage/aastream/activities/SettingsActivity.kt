@@ -24,8 +24,10 @@ import com.garage.aastream.utils.DevLog
 import com.garage.aastream.utils.PhenotypePatcher
 import kotlinx.android.synthetic.main.activity_settings.*
 import kotlinx.android.synthetic.main.view_settings_about.*
+import kotlinx.android.synthetic.main.view_settings_audio.*
 import kotlinx.android.synthetic.main.view_settings_brightness.*
 import kotlinx.android.synthetic.main.view_settings_debug.*
+import kotlinx.android.synthetic.main.view_settings_immersive.*
 import kotlinx.android.synthetic.main.view_settings_resize.*
 import kotlinx.android.synthetic.main.view_settings_rotation.*
 import kotlinx.android.synthetic.main.view_settings_sidebar.*
@@ -142,6 +144,26 @@ class SettingsActivity : AppCompatActivity() {
                 checkForSystemWritePermission()
             }
             preferences.putBoolean(PreferenceHandler.KEY_RESIZE_ENABLED, isChecked)
+        }
+
+        // Immersive controller
+        settings_immersive_switch.isChecked = preferences.getBoolean(PreferenceHandler.KEY_IMMERSIVE_MODE, false)
+        settings_immersive_switch.setOnCheckedChangeListener { _, isChecked ->
+            DevLog.d("Immersive switch changed: $isChecked")
+            if (isChecked) {
+                checkForSystemWritePermission()
+            }
+            preferences.putBoolean(PreferenceHandler.KEY_IMMERSIVE_MODE, isChecked)
+        }
+
+        // Audio controller
+        settings_audio_switch.isChecked = preferences.getBoolean(PreferenceHandler.KEY_AUDIO_FOCUS, false)
+        settings_audio_switch.setOnCheckedChangeListener { _, isChecked ->
+            DevLog.d("Audio switch changed: $isChecked")
+            if (isChecked) {
+                checkForSystemWritePermission()
+            }
+            preferences.putBoolean(PreferenceHandler.KEY_AUDIO_FOCUS, isChecked)
         }
 
         // Sidebar controller

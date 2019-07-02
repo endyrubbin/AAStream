@@ -9,6 +9,7 @@ import android.content.IntentFilter
 import android.graphics.Color
 import android.hardware.display.DisplayManager
 import android.hardware.display.VirtualDisplay
+import android.hardware.usb.UsbManager
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
 import android.os.Handler
@@ -61,6 +62,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     @Inject lateinit var audioHandler: AudioHandler
     @Inject lateinit var terminalController: TerminalController
     @Inject lateinit var notificationHandler: NotificationHandler
+    @Inject lateinit var displayHandler: DisplayHandler
 
     private lateinit var rootView: View
     private lateinit var windowManager: WindowManager
@@ -86,6 +88,9 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     private val wakeLock = (context.getSystemService(Context.POWER_SERVICE) as PowerManager).newWakeLock(
         SCREEN_DIM_WAKE_LOCK or ACQUIRE_CAUSES_WAKEUP, WAKELOCK_TAG)
 
+    /**
+     * Called when user has granted permission to start screen capture
+     */
     private val requestHandler = Handler(Handler.Callback { msg ->
         if (msg?.what == Const.REQUEST_MEDIA_PROJECTION_PERMISSION) {
             projectionCode = msg.arg2
@@ -96,12 +101,17 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         false
     })
 
+    /**
+     * Initialize broadcast receivers
+     */
     init {
         (context as App).component.inject(this)
         screenFilter.addAction(Intent.ACTION_USER_PRESENT)
         screenFilter.addAction(Intent.ACTION_SCREEN_ON)
         screenFilter.addAction(Intent.ACTION_SCREEN_OFF)
         usbFilter.addAction(Intent.ACTION_POWER_DISCONNECTED)
+        usbFilter.addAction(UsbManager.ACTION_USB_ACCESSORY_DETACHED)
+        usbFilter.addAction(UsbManager.ACTION_USB_DEVICE_DETACHED)
     }
 
     /**
@@ -117,7 +127,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         Thread.setDefaultUncaughtExceptionHandler { _, e ->
             e.printStackTrace()
             DevLog.d("App has crashed: ${e.localizedMessage}")
-            finish()
+            onDestroy()
         }
 
         initViews()
@@ -146,6 +156,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         wakeLock.acquire(Long.MAX_VALUE)
         audioHandler.start()
         orientationListener.enable()
+        displayHandler.changeDisplaySettings()
         brightnessHandler.setScreenBrightness()
         rotationHandler.setScreenRotation()
         context.registerReceiver(screenLockReceiver, screenFilter)
@@ -157,12 +168,10 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      */
     fun onStop() {
         DevLog.d("Car activity stopped")
-        onScreenOff()
         if (wakeLock.isHeld) wakeLock.release()
         audioHandler.stop()
         orientationListener.disable()
-        context.unregisterReceiver(screenLockReceiver)
-        context.unregisterReceiver(usbStateReceiver)
+        stopScreenCapture()
     }
 
     /**
@@ -172,10 +181,20 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         DevLog.d("Car activity destroyed")
         destroyed = true
         terminalController.stop()
-        onScreenOff()
         stopMinitouch()
+        displayHandler.restoreDisplaySettings()
         brightnessHandler.restoreScreenBrightness()
         rotationHandler.restoreScreenRotation()
+        try {
+            context.unregisterReceiver(screenLockReceiver)
+        } catch (e: Exception) {
+            DevLog.d("Screen lock receiver already unregistered")
+        }
+        try {
+            context.unregisterReceiver(usbStateReceiver)
+        } catch (e: Exception) {
+            DevLog.d("USB state receiver already unregistered")
+        }
     }
 
     /**
@@ -235,13 +254,6 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
             Const.REQUEST_MEDIA_PROJECTION_PERMISSION,
             mediaProjectionManager.createScreenCaptureIntent()
         )
-    }
-
-    /**
-     * Finish the application
-     */
-    private fun finish() {
-        onDestroy()
     }
 
     /**
@@ -530,20 +542,10 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
                 val deviceWidth = miniTouchHandler.getDeviceDisplayWidth()
                 val deviceHeight = (deviceWidth * ratio).toInt()
                 if (deviceWidth > 0) {
-                    DevLog.d("Setting screen size: $deviceWidth $deviceHeight")
-                    ShellExecutor("wm size " + deviceWidth + "x" + deviceHeight).start()
+                    displayHandler.updateScreenSize(deviceWidth, deviceHeight)
                 }
             }
         }
-    }
-
-    /**
-     * Reset the screen size
-     */
-    private fun resetScreenSize() {
-        DevLog.d("Resetting screen size")
-        ShellExecutor("wm size reset").start()
-        ShellExecutor("wm density reset").start()
     }
 
     /**
@@ -561,6 +563,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     override fun onScreenOn() {
         DevLog.d("Screen ON")
         rootView.car_surface_view.keepScreenOn = true
+        updateScreenSize()
         startScreenCapture()
     }
 
@@ -570,7 +573,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
     override fun onScreenOff() {
         DevLog.d("Screen OFF")
         rootView.car_surface_view.keepScreenOn = false
-        resetScreenSize()
+        displayHandler.restoreDisplaySettings()
         stopScreenCapture()
     }
 
@@ -587,8 +590,10 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      */
     override fun onRotationChanged() {
         DevLog.d("Rotation changed")
-        miniTouchHandler.updateValues()
-        onWindowFocusChanged()
+        if (!destroyed) {
+            miniTouchHandler.updateValues()
+            onWindowFocusChanged()
+        }
     }
 
     /**
@@ -671,7 +676,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
      */
     override fun onUsbDisconnected() {
         DevLog.d("Usb disconnected")
-        finish()
+        onDestroy()
     }
 
     /**

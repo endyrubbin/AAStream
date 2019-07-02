@@ -3,6 +3,7 @@ package com.garage.aastream.receivers
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.hardware.usb.UsbManager
 import com.garage.aastream.utils.DevLog
 
 /**
@@ -12,8 +13,10 @@ import com.garage.aastream.utils.DevLog
 class UsbStateReceiver(private val callback: UsbStateCallback) : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
         DevLog.d("USB state changed: ${intent?.action}")
-        if(intent?.action.equals(Intent.ACTION_POWER_DISCONNECTED)) {
-            callback.onUsbDisconnected()
+        when (intent?.action) {
+            Intent.ACTION_POWER_DISCONNECTED,
+            UsbManager.ACTION_USB_ACCESSORY_DETACHED,
+            UsbManager.ACTION_USB_DEVICE_DETACHED -> callback.onUsbDisconnected()
         }
     }
 
