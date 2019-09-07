@@ -76,5 +76,6 @@ class PreferenceHandler(context: Application) {
         const val KEY_OPEN_MENU_METHOD = "menu_open_method"
         const val KEY_RESIZE_ENABLED = "resize_enabled"
         const val KEY_IMMERSIVE_MODE = "immersive_mode"
+        const val KEY_FULLSCREEN_MODE = "fullscreen_mode"        
     }
 }
