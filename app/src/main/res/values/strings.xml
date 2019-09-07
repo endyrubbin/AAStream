@@ -74,4 +74,6 @@
     </string>
     <string name="txt_force_immersive_title">Force immersive mode</string>
     <string name="txt_force_immersive_subtitle">Enable this setting to force immersive mode</string>
+    <string name="txt_force_fullscreen_title">FullScreen mode in Android Auto</string>
+    <string name="txt_force_fullscreen_subtitle">Enable this setting to force FullScreen mode</string>
 </resources>
