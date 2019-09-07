@@ -43,6 +43,12 @@
                  android:id="@+id/view_settings_immersive" />
 
         <View style="@style/DividerStyle"/>
+            
+         <!-- Full Screen control -->   
+        <include layout="@layout/view_settings_fullscreen"
+            android:id="@+id/view_settings_fullscreen" />
+
+        <View style="@style/DividerStyle"/>
 
         <!-- Audio control -->
         <include layout="@layout/view_settings_audio"
