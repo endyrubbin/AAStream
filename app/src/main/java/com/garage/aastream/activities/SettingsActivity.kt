@@ -28,6 +28,7 @@ import kotlinx.android.synthetic.main.view_settings_audio.*
 import kotlinx.android.synthetic.main.view_settings_brightness.*
 import kotlinx.android.synthetic.main.view_settings_debug.*
 import kotlinx.android.synthetic.main.view_settings_immersive.*
+import kotlinx.android.synthetic.main.view_settings_fullscreen.*
 import kotlinx.android.synthetic.main.view_settings_resize.*
 import kotlinx.android.synthetic.main.view_settings_rotation.*
 import kotlinx.android.synthetic.main.view_settings_sidebar.*
@@ -154,6 +155,13 @@ class SettingsActivity : AppCompatActivity() {
                 checkForSystemWritePermission()
             }
             preferences.putBoolean(PreferenceHandler.KEY_IMMERSIVE_MODE, isChecked)
+        }
+        
+        // FullScreen controller
+        settings_fullscreen_switch.isChecked = preferences.getBoolean(PreferenceHandler.KEY_FULLSCREEN_MODE, false)
+        settings_fullscreen_switch.setOnCheckedChangeListener { _, isChecked ->
+            DevLog.d("Fullscreen switch changed: $isChecked")
+            preferences.putBoolean(PreferenceHandler.KEY_FULLSCREEN_MODE, isChecked)
         }
 
         // Audio controller

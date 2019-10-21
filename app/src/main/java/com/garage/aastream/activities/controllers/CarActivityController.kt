@@ -157,6 +157,7 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
         audioHandler.start()
         orientationListener.enable()
         displayHandler.changeDisplaySettings()
+        checkFullScreen()
         brightnessHandler.setScreenBrightness()
         rotationHandler.setScreenRotation()
         context.registerReceiver(screenLockReceiver, screenFilter)
@@ -708,6 +709,14 @@ class CarActivityController(val context: Application) : OnScreenLockCallback, On
             VIEW_APP_LIST(1),
             VIEW_FAVORITES(2),
             VIEW_TERMINAL(3)
+        }
+    }
+        
+    private fun checkFullScreen(){
+        if (preferences.getBoolean(PreferenceHandler.KEY_FULLSCREEN_MODE, false)) {
+            rootView.systemUiVisibility = View.SYSTEM_UI_FLAG_FULLSCREEN or
+                    View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
+                    View.SYSTEM_UI_FLAG_IMMERSIVE or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         }
     }
 }
